@@ -4,7 +4,12 @@
             ACTIONS = {onClick = id; }; 
             CLASS = Controller; 
             LANGUAGE = ObjC; 
-            OUTLETS = {textField = NSTextField; }; 
+            OUTLETS = {
+                connectButton = NSButton; 
+                hostField = NSTextField; 
+                portField = NSTextField; 
+                textField = NSTextField; 
+            }; 
             SUPERCLASS = NSObject; 
         }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }

@@ -17,9 +17,13 @@
 - (IBAction)onClick:(id)sender {
 	//NSLog(@"click: %@", [textField stringValue]);
 	[textField setStringValue:@"Hello, World"];
+	
+	[_client setHost:[hostField stringValue]];
+	[_client setPort:[portField intValue]];
 
 	if (![_client isConnected]) {
 		[_client connect];
+		[connectButton setTitle:@"Connecting..."];
 	} else {
 		[_client disconnect];
 	}
@@ -27,7 +31,7 @@
 
 // TcpClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
-//   [_connectButton setTitle:@"Disconnect"];
+	[connectButton setTitle:@"Disconnect"];
 
    // Example of sending data
    NSString *message = @"Hello, server!";
@@ -44,10 +48,10 @@
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"Connection failed with error: %@", error);
-//	[_connectButton setTitle:@"Connect"];
+	[connectButton setTitle:@"Connect"];
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
-//	  [_connectButton setTitle:@"Connect"];
+	[connectButton setTitle:@"Connect"];
 }
 @end

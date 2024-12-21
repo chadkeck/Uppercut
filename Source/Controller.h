@@ -5,6 +5,9 @@
 
 @interface Controller : NSObject {
 	IBOutlet NSTextField *textField;
+	IBOutlet NSTextField *hostField;
+	IBOutlet NSTextField *portField;
+	IBOutlet NSButton *connectButton;
 	TcpClient *_client;
 }
 
