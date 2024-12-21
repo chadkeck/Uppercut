@@ -2,13 +2,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "TcpClient.h"
-
-typedef enum {
-	TrafficLightStateRed,
-	TrafficLightStateGreen,
-	TrafficLightStateOrange,
-	TrafficLightStateGray
-} TrafficLightState;
+#import "NetworkStatusEnum.h"
 
 @interface Controller : NSObject {
 	IBOutlet NSTextField *hostField;
@@ -20,5 +14,5 @@ typedef enum {
 }
 
 - (IBAction)onClick:(id)sender;
-- (void)setConnectionLightState:(TrafficLightState)state;
+- (void)setConnectionLightState:(NetworkStatusState)state;
 @end

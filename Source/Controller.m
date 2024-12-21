@@ -14,19 +14,19 @@
 	[super dealloc];
 }
 
-- (void)setConnectionLightState:(TrafficLightState)state {
+- (void)setConnectionLightState:(NetworkStatusState)state {
 	NSString *fileName;
 	switch (state) {
-		case TrafficLightStateGreen:
+		case NetworkStatusStateConnected:
 			fileName = @"status-available";
 			break;
-		case TrafficLightStateRed:
+		case NetworkStatusStateDisconnected:
 			fileName = @"status-away";
 			break;
-		case TrafficLightStateOrange:
+		case NetworkStatusStateWaiting:
 			fileName = @"status-idle";
 			break;
-		case TrafficLightStateGray:
+		case NetworkStatusStateOff:
 			fileName = @"status-offline";
 			break;
 
@@ -52,7 +52,7 @@
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
 	[connectionStatusTextField setStringValue:@"Connected"];
-	[self setConnectionLightState:TrafficLightStateGreen];
+	[self setConnectionLightState:NetworkStatusStateConnected];
 
 	// Example of sending data
 	NSString *message = @"Hello, server!";
@@ -69,13 +69,13 @@
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"Connection failed with error: %@", error);
-	[self setConnectionLightState:TrafficLightStateRed];
+	[self setConnectionLightState:NetworkStatusStateDisconnected];
 	[connectButton setTitle:@"Connect"];
 	[connectionStatusTextField setStringValue:@"Disconnected"];
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
-	[self setConnectionLightState:TrafficLightStateRed];
+	[self setConnectionLightState:NetworkStatusStateDisconnected];
 	[connectButton setTitle:@"Connect"];
 	[connectionStatusTextField setStringValue:@"Disconnected"];
 }
