@@ -7,8 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5D96D8942D16515C00EE8132 /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D96D8902D16515C00EE8132 /* Controller.m */; };
-		5D96D8952D16515C00EE8132 /* TcpClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D96D8922D16515C00EE8132 /* TcpClient.m */; };
+		5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F62D1655CA00A6B02A /* Controller.m */; };
+		5DC443FB2D1655CA00A6B02A /* TcpClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F82D1655CA00A6B02A /* TcpClient.m */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -24,11 +24,11 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* Uppercut_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Uppercut_Prefix.pch; sourceTree = "<group>"; };
-		5D96D88F2D16515C00EE8132 /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Controller.h; sourceTree = "<group>"; };
-		5D96D8902D16515C00EE8132 /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = Controller.m; sourceTree = "<group>"; };
-		5D96D8912D16515C00EE8132 /* TcpClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TcpClient.h; sourceTree = "<group>"; };
-		5D96D8922D16515C00EE8132 /* TcpClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = TcpClient.m; sourceTree = "<group>"; };
-		5D96D8932D16515C00EE8132 /* TcpClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TcpClientDelegate.h; sourceTree = "<group>"; };
+		5DC443F52D1655CA00A6B02A /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = Source/Controller.h; sourceTree = "<group>"; };
+		5DC443F62D1655CA00A6B02A /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Controller.m; path = Source/Controller.m; sourceTree = "<group>"; };
+		5DC443F72D1655CA00A6B02A /* TcpClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TcpClient.h; path = Source/TcpClient.h; sourceTree = "<group>"; };
+		5DC443F82D1655CA00A6B02A /* TcpClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TcpClient.m; path = Source/TcpClient.m; sourceTree = "<group>"; };
+		5DC443F92D1655CA00A6B02A /* TcpClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TcpClientDelegate.h; path = Source/TcpClientDelegate.h; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Uppercut.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uppercut.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -81,11 +81,7 @@
 		29B97314FDCFA39411CA2CEA /* Uppercut */ = {
 			isa = PBXGroup;
 			children = (
-				5D96D88F2D16515C00EE8132 /* Controller.h */,
-				5D96D8902D16515C00EE8132 /* Controller.m */,
-				5D96D8912D16515C00EE8132 /* TcpClient.h */,
-				5D96D8922D16515C00EE8132 /* TcpClient.m */,
-				5D96D8932D16515C00EE8132 /* TcpClientDelegate.h */,
+				5D4D538B2D16550A0070DC05 /* Source */,
 				080E96DDFE201D6D7F000001 /* Classes */,
 				29B97315FDCFA39411CA2CEA /* Other Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -123,6 +119,18 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		5D4D538B2D16550A0070DC05 /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				5DC443F52D1655CA00A6B02A /* Controller.h */,
+				5DC443F62D1655CA00A6B02A /* Controller.m */,
+				5DC443F72D1655CA00A6B02A /* TcpClient.h */,
+				5DC443F82D1655CA00A6B02A /* TcpClient.m */,
+				5DC443F92D1655CA00A6B02A /* TcpClientDelegate.h */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -149,7 +157,7 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Uppercut" */;
+			buildConfigurationList = C01FCF4E08A954540054247B /* Build configuration list for PBXProject "uppercut" */;
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* Uppercut */;
 			projectDirPath = "";
@@ -177,8 +185,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
-				5D96D8942D16515C00EE8132 /* Controller.m in Sources */,
-				5D96D8952D16515C00EE8132 /* TcpClient.m in Sources */,
+				5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */,
+				5DC443FB2D1655CA00A6B02A /* TcpClient.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -268,7 +276,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "Uppercut" */ = {
+		C01FCF4E08A954540054247B /* Build configuration list for PBXProject "uppercut" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				C01FCF4F08A954540054247B /* Debug */,
