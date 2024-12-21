@@ -14,7 +14,7 @@
 	[super dealloc];
 }
 
-- (IBAction)onClick:(id)sender {
+- (IBAction)onClickConnect:(id)sender {
 	[_client setHost:[hostField stringValue]];
 	[_client setPort:[portField intValue]];
 
@@ -26,23 +26,35 @@
 	}
 }
 
+- (IBAction)onClickSendData:(id)sender {
+	// if we're connected, send data over socket and clear the input
+	NSLog(@"send data");
+		
+	// send data
+	NSString *message = [sendDataTextField stringValue];
+	NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+	[_client sendData:data];
+	
+	// clear the input field
+	[sendDataTextField setStringValue:@""];
+}
+
 // TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
 	[hostField setEnabled:FALSE];
 	[portField setEnabled:FALSE];
 	[networkStatusController setConnectionState:NetworkStatusStateConnected];
-	
-	// Example of sending data
-	NSString *message = @"Hello, server!";
-	NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
-	[_client sendData:data];
+
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
 	NSString *message = [[NSString alloc] initWithData:data 
 											  encoding:NSUTF8StringEncoding];
 	NSLog(@"Received message: %@", message);
+	
+	[dataTextView setString:message];
+	
 	[message release];
 }
 

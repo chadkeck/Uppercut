@@ -9,12 +9,18 @@
 	IBOutlet NSTextField *hostField;
 	IBOutlet NSTextField *portField;
 	IBOutlet NSButton *connectButton;
+	
+	IBOutlet NSTextField *sendDataTextField;
+	IBOutlet NSButton *sendDataButton;
+	IBOutlet NSTextView *dataTextView;
+	
 	IBOutlet NetworkStatusController *networkStatusController;
 	TCPClient *_client;
 }
 
 #pragma mark - UI Actions
-- (IBAction)onClick:(id)sender;
+- (IBAction)onClickConnect:(id)sender;
+- (IBAction)onClickSendData:(id)sender;
 
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;

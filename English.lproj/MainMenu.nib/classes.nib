@@ -1,14 +1,17 @@
 {
     IBClasses = (
         {
-            ACTIONS = {onClick = id; }; 
+            ACTIONS = {onClickConnect = id; onClickSendData = id; }; 
             CLASS = Controller; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 connectButton = NSButton; 
+                dataTextView = NSTextView; 
                 hostField = NSTextField; 
                 networkStatusController = NetworkStatusController; 
                 portField = NSTextField; 
+                sendDataButton = NSButton; 
+                sendDataTextField = NSTextField; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
