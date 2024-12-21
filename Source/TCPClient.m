@@ -59,7 +59,8 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     [super dealloc];
 }
 
-// Getter/setter implementations with proper memory management
+#pragma mark - Getters and setters
+
 - (void)setDelegate:(id<TCPClientDelegate>)delegate {
     // Delegates are not retained to avoid retain cycles
     _delegate = delegate;
@@ -87,6 +88,8 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 - (int)port {
     return _port;
 }
+
+#pragma mark - Networking
 
 - (BOOL)isConnected {
     return _isConnected;
@@ -184,7 +187,8 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     }
 }
 
-// Internal handlers for socket callbacks
+#pragma mark - Private callbacks
+
 - (void)handleConnect {
     _isConnected = YES;
     if (_delegate && [_delegate respondsToSelector:@selector(tcpClientDidConnect:)]) {
