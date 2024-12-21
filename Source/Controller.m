@@ -33,10 +33,10 @@
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
 
-   // Example of sending data
-   NSString *message = @"Hello, server!";
-   NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
-   [_client sendData:data];
+	// Example of sending data
+	NSString *message = @"Hello, server!";
+	NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
+	[_client sendData:data];
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
