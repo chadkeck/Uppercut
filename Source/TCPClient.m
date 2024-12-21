@@ -1,4 +1,4 @@
-#import "TcpClient.h"
+#import "TCPClient.h"
 #import <sys/socket.h>
 #import <netinet/in.h>
 #import <arpa/inet.h>
@@ -8,7 +8,7 @@
 static void socketCallback(CFSocketRef socket, CFSocketCallBackType type, 
     CFDataRef address, const void *data, void *info) {
     
-    TcpClient *client = (TcpClient *)info;
+    TCPClient *client = (TCPClient *)info;
     
     switch (type) {
         case kCFSocketConnectCallBack:
@@ -18,7 +18,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
                     withObject:nil waitUntilDone:NO];
             } else {
                 NSLog(@"Connection failed");
-                NSError *error = [NSError errorWithDomain:@"TcpClientError" 
+                NSError *error = [NSError errorWithDomain:@"TCPClientError" 
                     code:1 userInfo:nil];
                 [client performSelectorOnMainThread:@selector(handleError:) 
                     withObject:error waitUntilDone:NO];
@@ -35,7 +35,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     }
 }
 
-@implementation TcpClient
+@implementation TCPClient
 
 - (id)init {
     self = [super init];
@@ -60,12 +60,12 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 }
 
 // Getter/setter implementations with proper memory management
-- (void)setDelegate:(id<TcpClientDelegate>)delegate {
+- (void)setDelegate:(id<TCPClientDelegate>)delegate {
     // Delegates are not retained to avoid retain cycles
     _delegate = delegate;
 }
 
-- (id<TcpClientDelegate>)delegate {
+- (id<TCPClientDelegate>)delegate {
     return _delegate;
 }
 

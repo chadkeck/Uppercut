@@ -3,7 +3,7 @@
 @implementation Controller
 
 - (void)awakeFromNib {
-	_client = [[TcpClient alloc] init];
+	_client = [[TCPClient alloc] init];
 	[_client setDelegate:self];
 	[_client setHost:@"localhost"];
 	[_client setPort:1234];
@@ -26,7 +26,7 @@
 	}
 }
 
-// TcpClientDelegate methods
+// TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
 	[networkStatusController setConnectionState:NetworkStatusStateConnected];

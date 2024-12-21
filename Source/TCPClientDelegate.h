@@ -1,4 +1,4 @@
-@protocol TcpClientDelegate
+@protocol TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data;
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error;

@@ -1,7 +1,7 @@
 /* Controller */
 
 #import <Cocoa/Cocoa.h>
-#import "TcpClient.h"
+#import "TCPClient.h"
 #import "NetworkStatusEnum.h"
 #import "NetworkStatusController.h"
 
@@ -10,13 +10,13 @@
 	IBOutlet NSTextField *portField;
 	IBOutlet NSButton *connectButton;
 	IBOutlet NetworkStatusController *networkStatusController;
-	TcpClient *_client;
+	TCPClient *_client;
 }
 
 #pragma mark - UI Actions
 - (IBAction)onClick:(id)sender;
 
-#pragma mark - TcpClientDelegate
+#pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data;
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error;

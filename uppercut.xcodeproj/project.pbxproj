@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		5D0D4C182D16EC8A00BB9BA8 /* NetworkStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D0D4C162D16EC8A00BB9BA8 /* NetworkStatusController.m */; };
 		5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F62D1655CA00A6B02A /* Controller.m */; };
-		5DC443FB2D1655CA00A6B02A /* TcpClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F82D1655CA00A6B02A /* TcpClient.m */; };
+		5DC443FB2D1655CA00A6B02A /* TCPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F82D1655CA00A6B02A /* TCPClient.m */; };
 		5DC444422D165E3700A6B02A /* status-available.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443E2D165E3700A6B02A /* status-available.tiff */; };
 		5DC444432D165E3700A6B02A /* status-away.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443F2D165E3700A6B02A /* status-away.tiff */; };
 		5DC444442D165E3700A6B02A /* status-idle.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444402D165E3700A6B02A /* status-idle.tiff */; };
@@ -34,9 +34,9 @@
 		5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusEnum.h; path = Source/NetworkStatusEnum.h; sourceTree = "<group>"; };
 		5DC443F52D1655CA00A6B02A /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = Source/Controller.h; sourceTree = "<group>"; };
 		5DC443F62D1655CA00A6B02A /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Controller.m; path = Source/Controller.m; sourceTree = "<group>"; };
-		5DC443F72D1655CA00A6B02A /* TcpClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TcpClient.h; path = Source/TcpClient.h; sourceTree = "<group>"; };
-		5DC443F82D1655CA00A6B02A /* TcpClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TcpClient.m; path = Source/TcpClient.m; sourceTree = "<group>"; };
-		5DC443F92D1655CA00A6B02A /* TcpClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TcpClientDelegate.h; path = Source/TcpClientDelegate.h; sourceTree = "<group>"; };
+		5DC443F72D1655CA00A6B02A /* TCPClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TCPClient.h; path = Source/TCPClient.h; sourceTree = "<group>"; };
+		5DC443F82D1655CA00A6B02A /* TCPClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TCPClient.m; path = Source/TCPClient.m; sourceTree = "<group>"; };
+		5DC443F92D1655CA00A6B02A /* TCPClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TCPClientDelegate.h; path = Source/TCPClientDelegate.h; sourceTree = "<group>"; };
 		5DC4443E2D165E3700A6B02A /* status-available.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-available.tiff"; path = "Resources/status-available.tiff"; sourceTree = "<group>"; };
 		5DC4443F2D165E3700A6B02A /* status-away.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-away.tiff"; path = "Resources/status-away.tiff"; sourceTree = "<group>"; };
 		5DC444402D165E3700A6B02A /* status-idle.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-idle.tiff"; path = "Resources/status-idle.tiff"; sourceTree = "<group>"; };
@@ -143,9 +143,9 @@
 				5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */,
 				5DC443F52D1655CA00A6B02A /* Controller.h */,
 				5DC443F62D1655CA00A6B02A /* Controller.m */,
-				5DC443F72D1655CA00A6B02A /* TcpClient.h */,
-				5DC443F82D1655CA00A6B02A /* TcpClient.m */,
-				5DC443F92D1655CA00A6B02A /* TcpClientDelegate.h */,
+				5DC443F72D1655CA00A6B02A /* TCPClient.h */,
+				5DC443F82D1655CA00A6B02A /* TCPClient.m */,
+				5DC443F92D1655CA00A6B02A /* TCPClientDelegate.h */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -209,7 +209,7 @@
 			files = (
 				8D11072D0486CEB800E47090 /* main.m in Sources */,
 				5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */,
-				5DC443FB2D1655CA00A6B02A /* TcpClient.m in Sources */,
+				5DC443FB2D1655CA00A6B02A /* TCPClient.m in Sources */,
 				5D0D4C182D16EC8A00BB9BA8 /* NetworkStatusController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
