@@ -29,6 +29,8 @@
 // TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
+	[hostField setEnabled:FALSE];
+	[portField setEnabled:FALSE];
 	[networkStatusController setConnectionState:NetworkStatusStateConnected];
 	
 	// Example of sending data
@@ -47,11 +49,15 @@
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"Connection failed with error: %@", error);
 	[connectButton setTitle:@"Connect"];
+	[hostField setEnabled:TRUE];
+	[portField setEnabled:TRUE];
 	[networkStatusController setConnectionState:NetworkStatusStateDisconnected];
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
 	[connectButton setTitle:@"Connect"];
+	[hostField setEnabled:TRUE];
+	[portField setEnabled:TRUE];
 	[networkStatusController setConnectionState:NetworkStatusStateDisconnected];
 }
 @end
