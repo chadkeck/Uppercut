@@ -14,35 +14,13 @@
 	[super dealloc];
 }
 
-- (void)setConnectionLightState:(NetworkStatusState)state {
-	NSString *fileName;
-	switch (state) {
-		case NetworkStatusStateConnected:
-			fileName = @"status-available";
-			break;
-		case NetworkStatusStateDisconnected:
-			fileName = @"status-away";
-			break;
-		case NetworkStatusStateWaiting:
-			fileName = @"status-idle";
-			break;
-		case NetworkStatusStateOff:
-			fileName = @"status-offline";
-			break;
-
-	}
-	NSString *file = [[NSBundle mainBundle] pathForResource:fileName ofType:@"tiff"];
-	NSImage *image = [[NSImage alloc] initWithContentsOfFile:file];
-	[connectionStatusImageView setImage:image];
-}
-
 - (IBAction)onClick:(id)sender {
 	[_client setHost:[hostField stringValue]];
 	[_client setPort:[portField intValue]];
 
 	if (![_client isConnected]) {
 		[_client connect];
-		[connectionStatusTextField setStringValue:@"Connecting..."];
+		[networkStatusController setConnectionState:NetworkStatusStateWaiting];
 	} else {
 		[_client disconnect];
 	}
@@ -51,9 +29,8 @@
 // TcpClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
-	[connectionStatusTextField setStringValue:@"Connected"];
-	[self setConnectionLightState:NetworkStatusStateConnected];
-
+	[networkStatusController setConnectionState:NetworkStatusStateConnected];
+	
 	// Example of sending data
 	NSString *message = @"Hello, server!";
 	NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
@@ -69,14 +46,12 @@
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"Connection failed with error: %@", error);
-	[self setConnectionLightState:NetworkStatusStateDisconnected];
 	[connectButton setTitle:@"Connect"];
-	[connectionStatusTextField setStringValue:@"Disconnected"];
+	[networkStatusController setConnectionState:NetworkStatusStateDisconnected];
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
-	[self setConnectionLightState:NetworkStatusStateDisconnected];
 	[connectButton setTitle:@"Connect"];
-	[connectionStatusTextField setStringValue:@"Disconnected"];
+	[networkStatusController setConnectionState:NetworkStatusStateDisconnected];
 }
 @end

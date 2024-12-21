@@ -6,14 +6,22 @@
             LANGUAGE = ObjC; 
             OUTLETS = {
                 connectButton = NSButton; 
-                connectionStatusImageView = NSImageView; 
                 hostField = NSTextField; 
+                networkStatusController = NetworkStatusController; 
                 portField = NSTextField; 
-                textField = NSTextField; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
-        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }
+        {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            CLASS = NetworkStatusController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                connectionStatusImageView = NSImageView; 
+                connectionStatusTextField = NSTextField; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }
     ); 
     IBVersion = 1; 
 }

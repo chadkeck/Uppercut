@@ -1,7 +1,12 @@
 #import <Cocoa/Cocoa.h>
 
-@interface NetworkStatusController : NSObject {
+#import "NetworkStatusEnum.h"
 
+@interface NetworkStatusController : NSObject {
+	IBOutlet NSTextField *connectionStatusTextField;
+	IBOutlet NSImageView *connectionStatusImageView;
 }
+
+- (void)setConnectionState:(NetworkStatusState)state;
 
 @end
