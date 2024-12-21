@@ -27,13 +27,13 @@
 }
 
 - (IBAction)onClickSendData:(id)sender {
-	// if we're connected, send data over socket and clear the input
-	NSLog(@"send data");
+	NSLog(@"send data clicked");
 		
 	// send data
-	NSString *message = [sendDataTextField stringValue];
+	NSString *message = [[sendDataTextField stringValue] stringByAppendingString:@"\r\n"];
 	NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
 	[_client sendData:data];
+	NSLog(@"sent message: %@", message);
 	
 	// clear the input field
 	[sendDataTextField setStringValue:@""];
