@@ -11,10 +11,10 @@ typedef enum {
 } TrafficLightState;
 
 @interface Controller : NSObject {
-	IBOutlet NSTextField *textField;
 	IBOutlet NSTextField *hostField;
 	IBOutlet NSTextField *portField;
 	IBOutlet NSButton *connectButton;
+	IBOutlet NSTextField *connectionStatusTextField;
 	IBOutlet NSImageView *connectionStatusImageView;
 	TcpClient *_client;
 }

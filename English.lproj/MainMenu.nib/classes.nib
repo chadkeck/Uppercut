@@ -7,9 +7,9 @@
             OUTLETS = {
                 connectButton = NSButton; 
                 connectionStatusImageView = NSImageView; 
+                connectionStatusTextField = NSTextField; 
                 hostField = NSTextField; 
                 portField = NSTextField; 
-                textField = NSTextField; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
