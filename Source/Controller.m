@@ -14,8 +14,29 @@
 	[super dealloc];
 }
 
+- (void)setConnectionLightState:(TrafficLightState)state {
+	NSString *fileName;
+	switch (state) {
+		case TrafficLightStateGreen:
+			fileName = @"status-available";
+			break;
+		case TrafficLightStateRed:
+			fileName = @"status-away";
+			break;
+		case TrafficLightStateOrange:
+			fileName = @"status-idle";
+			break;
+		case TrafficLightStateGray:
+			fileName = @"status-offline";
+			break;
+
+	}
+	NSString *file = [[NSBundle mainBundle] pathForResource:fileName ofType:@"tiff"];
+	NSImage *image = [[NSImage alloc] initWithContentsOfFile:file];
+	[connectionStatusImageView setImage:image];
+}
+
 - (IBAction)onClick:(id)sender {
-	//NSLog(@"click: %@", [textField stringValue]);
 	[textField setStringValue:@"Hello, World"];
 	
 	[_client setHost:[hostField stringValue]];
@@ -32,6 +53,7 @@
 // TcpClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
 	[connectButton setTitle:@"Disconnect"];
+	[self setConnectionLightState:TrafficLightStateGreen];
 
 	// Example of sending data
 	NSString *message = @"Hello, server!";
@@ -48,10 +70,12 @@
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"Connection failed with error: %@", error);
+	[self setConnectionLightState:TrafficLightStateRed];
 	[connectButton setTitle:@"Connect"];
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
+	[self setConnectionLightState:TrafficLightStateRed];
 	[connectButton setTitle:@"Connect"];
 }
 @end

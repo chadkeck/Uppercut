@@ -9,6 +9,10 @@
 /* Begin PBXBuildFile section */
 		5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F62D1655CA00A6B02A /* Controller.m */; };
 		5DC443FB2D1655CA00A6B02A /* TcpClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F82D1655CA00A6B02A /* TcpClient.m */; };
+		5DC444422D165E3700A6B02A /* status-available.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443E2D165E3700A6B02A /* status-available.tiff */; };
+		5DC444432D165E3700A6B02A /* status-away.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443F2D165E3700A6B02A /* status-away.tiff */; };
+		5DC444442D165E3700A6B02A /* status-idle.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444402D165E3700A6B02A /* status-idle.tiff */; };
+		5DC444452D165E3700A6B02A /* status-offline.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444412D165E3700A6B02A /* status-offline.tiff */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -29,6 +33,10 @@
 		5DC443F72D1655CA00A6B02A /* TcpClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TcpClient.h; path = Source/TcpClient.h; sourceTree = "<group>"; };
 		5DC443F82D1655CA00A6B02A /* TcpClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = TcpClient.m; path = Source/TcpClient.m; sourceTree = "<group>"; };
 		5DC443F92D1655CA00A6B02A /* TcpClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TcpClientDelegate.h; path = Source/TcpClientDelegate.h; sourceTree = "<group>"; };
+		5DC4443E2D165E3700A6B02A /* status-available.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-available.tiff"; path = "Resources/status-available.tiff"; sourceTree = "<group>"; };
+		5DC4443F2D165E3700A6B02A /* status-away.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-away.tiff"; path = "Resources/status-away.tiff"; sourceTree = "<group>"; };
+		5DC444402D165E3700A6B02A /* status-idle.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-idle.tiff"; path = "Resources/status-idle.tiff"; sourceTree = "<group>"; };
+		5DC444412D165E3700A6B02A /* status-offline.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-offline.tiff"; path = "Resources/status-offline.tiff"; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Uppercut.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uppercut.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -103,6 +111,10 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5DC4443E2D165E3700A6B02A /* status-available.tiff */,
+				5DC4443F2D165E3700A6B02A /* status-away.tiff */,
+				5DC444402D165E3700A6B02A /* status-idle.tiff */,
+				5DC444412D165E3700A6B02A /* status-offline.tiff */,
 				8D1107310486CEB800E47090 /* Info.plist */,
 				089C165CFE840E0CC02AAC07 /* InfoPlist.strings */,
 				29B97318FDCFA39411CA2CEA /* MainMenu.nib */,
@@ -174,6 +186,10 @@
 			files = (
 				8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */,
 				8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */,
+				5DC444422D165E3700A6B02A /* status-available.tiff in Resources */,
+				5DC444432D165E3700A6B02A /* status-away.tiff in Resources */,
+				5DC444442D165E3700A6B02A /* status-idle.tiff in Resources */,
+				5DC444452D165E3700A6B02A /* status-offline.tiff in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
