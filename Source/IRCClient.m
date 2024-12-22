@@ -106,7 +106,7 @@
 
 // TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
-	_isConnected = NO;
+	_isConnected = YES;
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
