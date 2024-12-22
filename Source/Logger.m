@@ -14,6 +14,43 @@ static Logger *sharedInstance = nil;
 	return sharedInstance;
 }
 
+- (id)init {
+	if (self = [super init]) {
+		lastDate = [[NSCalendarDate alloc] init];
+		textStorage = nil;
+
+		// Set up log file path in Application Support
+		NSArray *paths = NSSearchPathForDirectoriesInDomains(
+				NSApplicationSupportDirectory, NSUserDomainMask, YES);
+		NSString *appSupport = [paths objectAtIndex:0];
+		NSString *bundleID = [[NSBundle mainBundle] bundleIdentifier];
+		NSString *logDir = [appSupport stringByAppendingPathComponent:bundleID];
+
+		// Create directory if it doesn't exist
+		[[NSFileManager defaultManager] createDirectoryAtPath:logDir
+												   attributes:nil];
+
+		logFilePath = [[logDir stringByAppendingPathComponent:@"application.log"] retain];
+
+		// Register for app termination notification
+		[[NSNotificationCenter defaultCenter]
+			addObserver:self
+			   selector:@selector(applicationWillTerminate:)
+				   name:NSApplicationWillTerminateNotification
+				 object:nil];
+	}
+	return self;
+}
+
+- (void)dealloc {
+	[lastDate release];
+	[textStorage release];
+	[textView release];
+	[logPanel release];
+	[logFilePath release];
+	[super dealloc];
+}
+
 - (void)awakeFromNib {
 	[[Logger sharedInstance] setLogView:textView];
 	[[Logger sharedInstance] setLogPanel:logPanel];
@@ -44,18 +81,12 @@ static Logger *sharedInstance = nil;
 	[[textView textStorage] setAttributedString:emptyString];
 	[emptyString release];
 	
+	[self loadLog];
+	
 	[textView setEditable:NO];
 	// enable automatic word wrapping
 	[[textView textContainer] setWidthTracksTextView:YES];
 	[textView setHorizontallyResizable:NO];
-}
-
-- (void)dealloc {
-	[lastDate release];
-	[textStorage release];
-	[textView release];
-	[logPanel release];
-	[super dealloc];
 }
 
 - (BOOL)isMainThread {
@@ -117,6 +148,43 @@ static Logger *sharedInstance = nil;
 	} else {
 		[logPanel makeKeyAndOrderFront:nil];
 	}
+}
+
+- (void)loadLog {
+	if (!textStorage) {
+		NSLog(@"Unable to load log. Error 1");
+		return;
+	}
+
+	NSString *existingLog = [NSString stringWithContentsOfFile:logFilePath];
+	if (existingLog) {
+		NSMutableDictionary *attrs = [NSMutableDictionary dictionary];
+		float defaultFontSize = -1.0;
+		[attrs setObject:[NSFont userFixedPitchFontOfSize:defaultFontSize] forKey:NSFontAttributeName];
+		NSAttributedString *attrString = [[NSAttributedString alloc]
+									initWithString:existingLog
+										attributes:attrs];
+		[textStorage setAttributedString:attrString];
+		[attrString release];
+
+		// Scroll to bottom of loaded content
+		if (textView) {
+			NSRange range = NSMakeRange([textStorage length], 0);
+			[textView scrollRangeToVisible:range];
+		}
+	}
+}
+
+- (void)saveLog {
+	if (!textStorage) return;
+
+	NSString *logContent = [textStorage string];
+	NSLog(@"Saving log of length: %d to %@", [logContent length], logFilePath);
+	[logContent writeToFile:logFilePath atomically:YES];
+}
+
+- (void)applicationWillTerminate:(NSNotification *)notification {
+	[self saveLog];
 }
 
 @end

@@ -8,6 +8,9 @@
 	[_client setDelegate:self];
 	[_client setHost:@"localhost"];
 	[_client setPort:1234];
+	
+	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
+	[[Logger sharedInstance] log:@"Uppercut started"];
 }
 
 - (void)dealloc {

@@ -4,6 +4,7 @@
 	IBOutlet NSPanel *logPanel;
 	IBOutlet NSTextView *textView;
 	NSTextStorage *textStorage;
+	NSString *logFilePath;
 	NSCalendarDate *lastDate;
 }
 
@@ -13,6 +14,8 @@
 - (void)setLogView:(NSTextView *)view;
 - (void)log:(NSString *)message;
 - (void)clear;
+- (void)saveLog;
+- (void)loadLog;
 - (IBAction)onToggleVisible:(id)sender;
 
 @end
