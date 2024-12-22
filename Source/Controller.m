@@ -1,4 +1,5 @@
 #import "Controller.h"
+#import "Logger.h"
 
 @implementation Controller
 
@@ -14,7 +15,7 @@
 	[super dealloc];
 }
 
-- (IBAction)onClickConnect:(id)sender {
+- (IBAction)onClickConnect:(id)sender {	
 	[_client setHost:[hostField stringValue]];
 	[_client setPort:[portField intValue]];
 
@@ -33,7 +34,7 @@
 	NSString *message = [[sendDataTextField stringValue] stringByAppendingString:@"\r\n"];
 	NSData *data = [message dataUsingEncoding:NSUTF8StringEncoding];
 	[_client sendData:data];
-	NSLog(@"sent message: %@", message);
+	[[Logger sharedInstance] log:[NSString stringWithFormat:@"Sent message: %@", message]];
 	
 	// clear the input field
 	[sendDataTextField setStringValue:@""];

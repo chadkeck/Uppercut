@@ -17,6 +17,13 @@
         }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
+            ACTIONS = {onToggleVisible = id; }; 
+            CLASS = Logger; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {logPanel = NSPanel; textView = NSTextView; }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
             CLASS = NetworkStatusController; 
             LANGUAGE = ObjC; 
             OUTLETS = {

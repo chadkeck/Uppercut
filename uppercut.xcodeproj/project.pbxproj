@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		5D0D4C182D16EC8A00BB9BA8 /* NetworkStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D0D4C162D16EC8A00BB9BA8 /* NetworkStatusController.m */; };
 		5D12D8532D174DF900CA148D /* IRCClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D12D8522D174DF900CA148D /* IRCClient.m */; };
+		5D7011E32D17A77E00DEA217 /* Logger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D7011E22D17A77E00DEA217 /* Logger.m */; };
 		5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F62D1655CA00A6B02A /* Controller.m */; };
 		5DC443FB2D1655CA00A6B02A /* TCPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F82D1655CA00A6B02A /* TCPClient.m */; };
 		5DC444422D165E3700A6B02A /* status-available.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443E2D165E3700A6B02A /* status-available.tiff */; };
@@ -35,6 +36,8 @@
 		5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusEnum.h; path = Source/NetworkStatusEnum.h; sourceTree = "<group>"; };
 		5D12D8512D174DF900CA148D /* IRCClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = IRCClient.h; path = Source/IRCClient.h; sourceTree = "<group>"; };
 		5D12D8522D174DF900CA148D /* IRCClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = IRCClient.m; path = Source/IRCClient.m; sourceTree = "<group>"; };
+		5D7011E12D17A76E00DEA217 /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Logger.h; path = Source/Logger.h; sourceTree = "<group>"; };
+		5D7011E22D17A77E00DEA217 /* Logger.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Logger.m; path = Source/Logger.m; sourceTree = "<group>"; };
 		5DC443F52D1655CA00A6B02A /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = Source/Controller.h; sourceTree = "<group>"; };
 		5DC443F62D1655CA00A6B02A /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Controller.m; path = Source/Controller.m; sourceTree = "<group>"; };
 		5DC443F72D1655CA00A6B02A /* TCPClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TCPClient.h; path = Source/TCPClient.h; sourceTree = "<group>"; };
@@ -151,6 +154,8 @@
 				5DC443F72D1655CA00A6B02A /* TCPClient.h */,
 				5DC443F82D1655CA00A6B02A /* TCPClient.m */,
 				5DC443F92D1655CA00A6B02A /* TCPClientDelegate.h */,
+				5D7011E12D17A76E00DEA217 /* Logger.h */,
+				5D7011E22D17A77E00DEA217 /* Logger.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -217,6 +222,7 @@
 				5DC443FB2D1655CA00A6B02A /* TCPClient.m in Sources */,
 				5D0D4C182D16EC8A00BB9BA8 /* NetworkStatusController.m in Sources */,
 				5D12D8532D174DF900CA148D /* IRCClient.m in Sources */,
+				5D7011E32D17A77E00DEA217 /* Logger.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
