@@ -93,6 +93,32 @@ static Logger *sharedInstance = nil;
 	return pthread_main_np() == 1;
 }
 
+- (NSString *)escapeString:(NSString *)input {
+	if (!input) return nil;
+
+	NSMutableString *output = [NSMutableString stringWithString:input];
+
+	// Define replacements
+	NSDictionary *replacements = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"\\n", @"\n",
+		@"\\r", @"\r",
+		@"\\t", @"\t",
+		@"\\\\", @"\\",
+		nil];
+
+	// Perform replacements
+	NSEnumerator *enumerator = [replacements keyEnumerator];
+	NSString *character;
+	while ((character = [enumerator nextObject])) {
+		[output replaceOccurrencesOfString:character
+								withString:[replacements objectForKey:character]
+								   options:NSLiteralSearch
+									 range:NSMakeRange(0, [output length])];
+	}
+
+	return output;
+}
+
 - (void)log:(NSString *)message {
 	if (lastDate) {
 		[lastDate release];
@@ -100,8 +126,9 @@ static Logger *sharedInstance = nil;
 	lastDate = [[NSCalendarDate alloc] init];
 
 	NSString *timestamp = [lastDate descriptionWithCalendarFormat:@"%Y-%m-%d %H:%M:%S"];
-	NSString *logMessage = [NSString stringWithFormat:@"%@ %@\n", timestamp, message];
-	
+	NSString *escapedMessage = [self escapeString:message];
+	NSString *logMessage = [NSString stringWithFormat:@"%@ %@\n", timestamp, escapedMessage];
+
 	// perform UI updates on main thread
 	if ([self isMainThread]) {
 		[self appendLogMessage:logMessage];
