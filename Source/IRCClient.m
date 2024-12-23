@@ -24,7 +24,8 @@
     [self disconnect];
     
     // Release retained objects
-    [_host release];
+	[_client release];
+	[_host release];
 	[_debounceTimer release];
     [super dealloc];
 }
@@ -90,6 +91,7 @@
 
 - (void)disconnect {
 	[self sendMessage:@"QUIT"];
+	[[self _client] disconnect]
 }
 
 - (BOOL)sendMessage:(NSString *)message {
@@ -183,7 +185,7 @@
 					NSLog(@"Got a privmsg");
 					if ([self processPrivateMessage:message]) {
 						NSDictionary *ftpConnectionDetails = [self getFTPConnectionDetails:message];
-						// get FTP credentials from message
+						[self disconnect];
 					} else {
 						NSLog(@"That privmsg didn't look like FTP credentials");
 					}
