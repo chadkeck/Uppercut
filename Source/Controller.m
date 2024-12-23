@@ -12,6 +12,8 @@
 	_ircClient = [[IRCClient alloc] init];
 	[_ircClient setDelegate:self];
 	
+	_ftpClient = nil;
+	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
 }
@@ -19,14 +21,21 @@
 - (void)dealloc {
 	[_client release];
 	[_ircClient release];
+	[_ftpClient release];
 	[super dealloc];
 }
 
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
 	NSLog(@"controller got ftp creds: %@", credentials);
 
-	FTPClient *ftpClient = [[FTPClient alloc] initWithHostname:[credentials objectForKey:@"host"] port:21 mode:FTPModeActive];
-	[ftpClient setDelegate:self];
+	_ftpClient = [[FTPClient alloc]
+		initWithHostname:[credentials objectForKey:@"host"]
+		port:21
+		username:[credentials objectForKey:@"username"]
+		password:[credentials objectForKey:@"password"]
+		mode:FTPModeActive];
+	[_ftpClient setDelegate:self];
+	[_ftpClient connect];
 }
 
 - (void)ftpClientDidConnect:(id)client {

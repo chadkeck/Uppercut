@@ -25,11 +25,14 @@ typedef enum {
     NSString *hostname;
     int commandPort;
     int dataPort;
+	NSString *username;
+	NSString *password;
     FTPMode mode;
     FTPTransferType transferType;
     
     id<FTPClientDelegate> delegate;
     BOOL isConnected;
+	BOOL isAuthenticated;
     NSMutableData *receivedData;
     NSMutableData *fileData;
     
@@ -37,10 +40,11 @@ typedef enum {
     NSString *pendingFilename;
 }
 
-- (id)initWithHostname:(NSString *)host port:(int)portNumber mode:(FTPMode)ftpMode;
+- (id)initWithHostname:(NSString *)host port:(int)portNumber username:(NSString *)user password:(NSString *)pass mode:(FTPMode)ftpMode;
 - (void)setDelegate:(id<FTPClientDelegate>)aDelegate;
 - (BOOL)connect;
 - (void)disconnect;
+- (void)authenticate;
 - (BOOL)sendCommand:(NSString *)command;
 - (void)setTransferType:(FTPTransferType)type;
 - (void)changeToDirectory:(NSString *)directory;

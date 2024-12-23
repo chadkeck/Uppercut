@@ -19,6 +19,7 @@
 	IBOutlet NetworkStatusController *networkStatusController;
 	TCPClient *_client;
 	IRCClient *_ircClient;
+	FTPClient *_ftpClient;
 }
 
 #pragma mark - UI Actions
