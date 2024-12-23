@@ -10,6 +10,7 @@
         _port = 0;
         _isConnected = NO;
 		_debounceTimer = nil;
+		_delegate = nil;
 		
 		_client = [[TCPClient alloc] init];
 		[_client setDelegate:self];
@@ -54,6 +55,32 @@
 }
 
 - (BOOL)connect {
+	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"192.168.1.100", @"host",
+		@"21", @"port",
+		@"pi", @"username",
+		@"test_password", @"password",
+		nil];
+	NSLog(@"fake details %@", connectionDetails);
+	NSLog(@"_delegate: %@", _delegate);
+	if (_delegate && [_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
+		[_delegate ircClient:self didReceiveCredentials:connectionDetails];
+	}
+	return NO;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	[_client setHost:[self host]];
 	[_client setPort:[self port]];
 	NSLog(@"IRC | connect to %@:%d", [_client host], [_client port]);
@@ -91,7 +118,7 @@
 
 - (void)disconnect {
 	[self sendMessage:@"QUIT"];
-	[[self _client] disconnect]
+	[[self _client] disconnect];
 }
 
 - (BOOL)sendMessage:(NSString *)message {
@@ -139,6 +166,11 @@
     return randomString;
 }
 
+- (void)setDelegate:(id<IRCClientDelegate>)delegate {
+	NSLog(@"irc client setDelegate: %@", delegate);
+    // Delegates are not retained to avoid retain cycles
+    _delegate = delegate;
+}
 
 // TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
@@ -185,6 +217,10 @@
 					NSLog(@"Got a privmsg");
 					if ([self processPrivateMessage:message]) {
 						NSDictionary *ftpConnectionDetails = [self getFTPConnectionDetails:message];
+						if (_delegate && [_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
+							[_delegate ircClient:self didReceiveCredentials:ftpConnectionDetails];
+						}
+
 						[self disconnect];
 					} else {
 						NSLog(@"That privmsg didn't look like FTP credentials");

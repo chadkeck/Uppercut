@@ -36,6 +36,7 @@
 		5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusEnum.h; path = Source/NetworkStatusEnum.h; sourceTree = "<group>"; };
 		5D12D8512D174DF900CA148D /* IRCClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = IRCClient.h; path = Source/IRCClient.h; sourceTree = "<group>"; };
 		5D12D8522D174DF900CA148D /* IRCClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = IRCClient.m; path = Source/IRCClient.m; sourceTree = "<group>"; };
+		5D5E9A212D198D5A00FF4EE3 /* IRCClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = IRCClientDelegate.h; path = Source/IRCClientDelegate.h; sourceTree = "<group>"; };
 		5D7011E12D17A76E00DEA217 /* Logger.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Logger.h; path = Source/Logger.h; sourceTree = "<group>"; };
 		5D7011E22D17A77E00DEA217 /* Logger.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Logger.m; path = Source/Logger.m; sourceTree = "<group>"; };
 		5DC443F52D1655CA00A6B02A /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = Source/Controller.h; sourceTree = "<group>"; };
@@ -144,6 +145,7 @@
 		5D4D538B2D16550A0070DC05 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				5D5E9A212D198D5A00FF4EE3 /* IRCClientDelegate.h */,
 				5D12D8512D174DF900CA148D /* IRCClient.h */,
 				5D12D8522D174DF900CA148D /* IRCClient.m */,
 				5D0D4C152D16EC8A00BB9BA8 /* NetworkStatusController.h */,

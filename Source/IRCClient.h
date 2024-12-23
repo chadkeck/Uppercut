@@ -1,4 +1,5 @@
 #import <Foundation/Foundation.h>
+#import "IRCClientDelegate.h"
 #import "TCPClient.h"
 
 @interface IRCClient : NSObject {
@@ -7,6 +8,7 @@
     int _port;
     BOOL _isConnected;
 	NSTimer *_debounceTimer;
+	id<IRCClientDelegate> _delegate;
 }
 
 // Method declarations
@@ -28,6 +30,9 @@
 - (NSString *)_getRandomUser;
 - (NSString *)_getRandomString:(int)length;
 - (BOOL)answerPing:(NSString *)pingMessage;
+
+#pragma mark - IRCClientDelegate
+- (void)setDelegate:(id<IRCClientDelegate>)delegate;
 
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;

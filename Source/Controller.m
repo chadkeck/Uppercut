@@ -10,6 +10,7 @@
 	[_client setPort:1234];
 	
 	_ircClient = [[IRCClient alloc] init];
+	[_ircClient setDelegate:self];
 	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
@@ -19,6 +20,10 @@
 	[_client release];
 	[_ircClient release];
 	[super dealloc];
+}
+
+- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
+	NSLog(@"controller got ftp creds: %@", credentials);
 }
 
 - (IBAction)onClickConnect:(id)sender {

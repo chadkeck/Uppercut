@@ -24,6 +24,9 @@
 - (IBAction)onClickConnect:(id)sender;
 - (IBAction)onClickSendData:(id)sender;
 
+#pragma mark - IRCClientDelegate
+- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
+
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data;
