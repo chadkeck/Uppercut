@@ -28,33 +28,33 @@
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
 	NSLog(@"controller got ftp creds: %@", credentials);
 
-	_ftpClient = [[FTPClient alloc]
-		initWithHostname:[credentials objectForKey:@"host"]
-		port:21
-		username:[credentials objectForKey:@"username"]
-		password:[credentials objectForKey:@"password"]
-		mode:FTPModeActive];
+	_ftpClient = [[FTPClient alloc] init];
+	[_ftpClient setHost:[credentials objectForKey:@"host"]];
+	[_ftpClient setPort:21];
+	[_ftpClient setUsername:[credentials objectForKey:@"username"]];
+	[_ftpClient setPassword:[credentials objectForKey:@"password"]];
 	[_ftpClient setDelegate:self];
 	[_ftpClient connect];
 }
 
-- (void)ftpClientDidConnect:(id)client {
-	NSLog(@"controller | ftpClientDidConnect");
+- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)entries {
+	NSLog(@"controller | ftpClient didReceiveDirectoryListing: %@", entries);
+}
+- (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
+	NSLog(@"controller | ftpClient didReceiveData: %@ for file %@", data, filename);
 }
 - (void)ftpClient:(id)client didFailWithError:(NSError *)error {
-	NSLog(@"controller | ftpClient didFailWithError %@", error);
+	NSLog(@"controller | ftpClient didFailWithError: %@", error);
 }
-- (void)ftpClient:(id)client didReceiveData:(NSData *)data {
-	NSLog(@"controller | ftpClient didReceiveData %@", data);
+- (void)ftpClientDidConnect:(id)client {
+	NSLog(@"controller | ftpClientDidConnect");
 }
 - (void)ftpClientDidDisconnect:(id)client {
 	NSLog(@"controller | ftpClientDidDisconnect");
 }
-- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)listing {
-	NSLog(@"controller | ftpClient didReceiveDirectoryListing %@", listing);
-}
-- (void)ftpClient:(id)client didDownloadFile:(NSString *)filename {
-	NSLog(@"controller | ftpClient didDownloadFile %@", filename);
+- (void)ftpClientDidAuthenticate:(id)client {
+	NSLog(@"controller | ftpClientDidAuthenticate");
+	[_ftpClient listDirectory:@""];
 }
 
 

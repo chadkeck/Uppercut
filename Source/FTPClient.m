@@ -1,310 +1,351 @@
 #import "FTPClient.h"
+#import <Foundation/NSRange.h>
+
+// Private interface
+@interface FTPClient (Private)
+- (void)_sendCommand:(NSString *)command;
+- (void)_parseResponse:(NSString *)response;
+- (void)_setupDataConnection;
+- (void)_handleResponse:(NSString *)response;
+- (int)_parsePortNumber:(NSString *)portString;
+@end
 
 @implementation FTPClient
 
-static void dataSocketCallback(CFSocketRef socket, 
-                             CFSocketCallBackType type,
-                             CFDataRef address,
-                             const void *data,
-                             void *info) {
-    FTPClient *client = (FTPClient *)info;
-	NSLog(@"xxxxxxxxxxxxxxxxxxxxxxxx");
-    if (type == kCFSocketAcceptCallBack) {
-        CFSocketNativeHandle nativeSocketHandle = *(CFSocketNativeHandle *)data;
-        CFReadStreamRef readStream = NULL;
-        CFWriteStreamRef writeStream = NULL;
-        
-        CFStreamCreatePairWithSocket(kCFAllocatorDefault, 
-                                   nativeSocketHandle,
-                                   &readStream,
-                                   &writeStream);
-        
-        if (readStream && writeStream) {
-            client->dataStream = readStream;
-            client->dataWriteStream = writeStream;
-            CFReadStreamOpen(readStream);
-            CFWriteStreamOpen(writeStream);
-        }
-    }
-}
-
-- (id)initWithHostname:(NSString *)host
-				  port:(int)portNumber
-			  username:(NSString *)user
-			  password:(NSString *)pass
-				  mode:(FTPMode)ftpMode {
+- (id)init {
     self = [super init];
     if (self) {
-        hostname = [host retain];
-        commandPort = portNumber;
-		username = [user retain];
-		password = [pass retain];
-        mode = ftpMode;
-        isConnected = NO;
-		isAuthenticated = NO;
-        receivedData = [[NSMutableData alloc] init];
-        fileData = [[NSMutableData alloc] init];
-        transferType = FTPTransferTypeASCII;
-        currentDirectory = [@"/" retain];
+        _commandClient = [[TCPClient alloc] init];
+        _dataClient = [[TCPClient alloc] init];
+		
+        _host = nil;
+        _port = 21; // Default FTP port
+        _username = nil;
+        _password = nil;
+		
+        _isConnected = NO;
+        _isAuthenticated = NO;
+        _transferMode = FTPTransferModePassive;
+		
+        _responseBuffer = [[NSMutableString alloc] init];
+        _delegate = nil;
+		
+        // Set up both command and data connection delegates
+        [_commandClient setDelegate:self];
+		[_dataClient setDelegate:self];
+		
+		// Store the current file being transferred 
+		_currentFile = nil;
     }
     return self;
 }
 
 - (void)dealloc {
     [self disconnect];
-    [hostname release];
-	[username release];
-	[password release];
-    [receivedData release];
-    [fileData release];
-    [currentDirectory release];
-    [pendingFilename release];
+	
+    [_commandClient release];
+    [_dataClient release];
+    [_host release];
+    [_username release];
+    [_password release];
+    [_responseBuffer release];
+	
     [super dealloc];
 }
 
-- (void)setDelegate:(id<FTPClientDelegate>)aDelegate {
-    delegate = aDelegate;
+#pragma mark - Property accessors
+
+- (void)setHost:(NSString *)host {
+    if (_host != host) {
+        [host retain];
+        [_host release];
+        _host = host;
+    }
 }
 
-- (void)authenticate {
-	NSString *userCommand = [NSString stringWithFormat:@"USER %@", username];
-	NSLog(@"FTP | authenticate sending command %@", userCommand);
-	[self sendCommand:userCommand];
+- (NSString *)host {
+    return _host;
 }
 
-- (void)setupActiveMode {
-    struct sockaddr_in addr;
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
-    addr.sin_port = 0;
-	
-	NSLog(@"FTP | setupActiveMode");
-    
-    CFSocketContext context = {0, self, NULL, NULL, NULL};
-    listenSocket = CFSocketCreate(kCFAllocatorDefault,
-                                PF_INET,
-                                SOCK_STREAM,
-                                IPPROTO_TCP,
-                                kCFSocketAcceptCallBack,
-                                dataSocketCallback,
-                                &context);
-    
-    CFDataRef addressData = CFDataCreate(NULL, (UInt8 *)&addr, sizeof(addr));
-    CFSocketSetAddress(listenSocket, addressData);
-    CFRelease(addressData);
-    
-    // Get the assigned port
-    addressData = CFSocketCopyAddress(listenSocket);
-    struct sockaddr_in *actualAddr = (struct sockaddr_in *)CFDataGetBytePtr(addressData);
-    dataPort = ntohs(actualAddr->sin_port);
-    CFRelease(addressData);
-    
-    CFRunLoopSourceRef source = CFSocketCreateRunLoopSource(kCFAllocatorDefault,
-                                                          listenSocket,
-                                                          0);
-    CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopCommonModes);
-    CFRelease(source);
+- (void)setPort:(int)port {
+    _port = port;
 }
+
+- (int)port {
+    return _port;
+}
+
+- (void)setUsername:(NSString *)username {
+    if (_username != username) {
+        [username retain];
+        [_username release];
+        _username = username;
+    }
+}
+
+- (void)setPassword:(NSString *)password {
+    if (_password != password) {
+        [password retain];
+        [_password release];
+        _password = password;
+    }
+}
+
+- (void)setTransferMode:(FTPTransferMode)mode {
+    _transferMode = mode;
+}
+
+- (BOOL)isConnected {
+    return _isConnected;
+}
+
+#pragma mark - Connection Management
 
 - (BOOL)connect {
-    CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault,
-                                     (CFStringRef)hostname,
-                                     commandPort,
-                                     &commandStream,
-                                     &commandWriteStream);
-    
-    if (!commandStream || !commandWriteStream) {
-        if ([delegate respondsToSelector:@selector(ftpClient:didFailWithError:)]) {
-            NSError *error = [NSError errorWithDomain:@"FTPClientError" 
-                                               code:-1 
-                                           userInfo:nil];
-            [delegate ftpClient:self didFailWithError:error];
-        }
+    if (_isConnected) {
         return NO;
     }
-
-    if (mode == FTPModeActive) {
-        [self setupActiveMode];
-    }
-
-    CFReadStreamOpen(commandStream);
-    CFWriteStreamOpen(commandWriteStream);
     
-    isConnected = YES;
-	[self authenticate];
-    
-    if ([delegate respondsToSelector:@selector(ftpClientDidConnect:)]) {
-        [delegate ftpClientDidConnect:self];
-    }
-    
-    return YES;
+    [_commandClient setHost:_host];
+    [_commandClient setPort:_port];
+    return [_commandClient connect];
 }
 
 - (void)disconnect {
-//	NSLog(@"FTP | disconnect | commandStream: %@ | commandWriteStream: %@", commandStream, commandWriteStream);
-    if (commandStream) {
-        CFReadStreamClose(commandStream);
-        CFRelease(commandStream);
-        commandStream = NULL;
+    if (_isConnected) {
+        [self _sendCommand:@"QUIT"];
     }
     
-    if (commandWriteStream) {
-        CFWriteStreamClose(commandWriteStream);
-        CFRelease(commandWriteStream);
-        commandWriteStream = NULL;
-    }
+    [_commandClient disconnect];
+    [_dataClient disconnect];
     
-    if (dataStream) {
-        CFReadStreamClose(dataStream);
-        CFRelease(dataStream);
-        dataStream = NULL;
-    }
-    
-    if (dataWriteStream) {
-        CFWriteStreamClose(dataWriteStream);
-        CFRelease(dataWriteStream);
-        dataWriteStream = NULL;
-    }
-    
-    if (listenSocket) {
-        CFSocketInvalidate(listenSocket);
-        CFRelease(listenSocket);
-        listenSocket = NULL;
-    }
-    
-    isConnected = NO;
-    
-    if ([delegate respondsToSelector:@selector(ftpClientDidDisconnect:)]) {
-        [delegate ftpClientDidDisconnect:self];
-    }
+    _isConnected = NO;
+    _isAuthenticated = NO;
 }
 
-- (void)setTransferType:(FTPTransferType)type {
-    transferType = type;
-    NSString *typeCommand = (type == FTPTransferTypeASCII) ? @"TYPE A" : @"TYPE I";
-    [self sendCommand:typeCommand];
-}
+#pragma mark - FTP Commands
 
-- (void)changeToDirectory:(NSString *)directory {
-    NSString *command = [NSString stringWithFormat:@"CWD %@", directory];
-    [self sendCommand:command];
-    [currentDirectory release];
-    currentDirectory = [directory retain];
-}
-
-- (void)listDirectory {
-    if (mode == FTPModePassive) {
-        [self sendCommand:@"PASV"];
-    } else {
-        struct sockaddr_in addr;
-        socklen_t len = sizeof(addr);
-        getsockname(CFSocketGetNative(listenSocket), (struct sockaddr *)&addr, &len);
-        
-        UInt8 *ip = (UInt8 *)&(addr.sin_addr.s_addr);
-        UInt8 *port = (UInt8 *)&dataPort;
-        
-        NSString *portCommand = [NSString stringWithFormat:@"PORT %d,%d,%d,%d,%d,%d",
-                               ip[0], ip[1], ip[2], ip[3], port[0], port[1]];
-        [self sendCommand:portCommand];
+- (void)authenticate {
+    if (!_isConnected || _isAuthenticated) {
+        return;
     }
     
-    [self sendCommand:@"LIST"];
+    // Send username
+    NSString *userCommand = [NSString stringWithFormat:@"USER %@", _username];
+    [self _sendCommand:userCommand];
 }
 
-- (void)downloadFile:(NSString *)filename {
-    [pendingFilename release];
-    pendingFilename = [filename retain];
-    
-    [self setTransferType:FTPTransferTypeBinary];
-    
-    if (mode == FTPModePassive) {
-        [self sendCommand:@"PASV"];
-    } else {
-        struct sockaddr_in addr;
-        socklen_t len = sizeof(addr);
-        getsockname(CFSocketGetNative(listenSocket), (struct sockaddr *)&addr, &len);
-        
-        UInt8 *ip = (UInt8 *)&(addr.sin_addr.s_addr);
-        UInt8 *port = (UInt8 *)&dataPort;
-        
-        NSString *portCommand = [NSString stringWithFormat:@"PORT %d,%d,%d,%d,%d,%d",
-                               ip[0], ip[1], ip[2], ip[3], port[0], port[1]];
-        [self sendCommand:portCommand];
+- (void)listDirectory:(NSString *)path {
+    if (!_isAuthenticated) {
+        return;
     }
     
-    NSString *command = [NSString stringWithFormat:@"RETR %@", filename];
-    [self sendCommand:command];
+    // Set up data connection first
+    [self _setupDataConnection];
+    
+    // Send LIST command
+    NSString *listCommand = path ? [NSString stringWithFormat:@"LIST %@", path] : @"LIST";
+    [self _sendCommand:listCommand];
 }
 
-- (BOOL)sendCommand:(NSString *)command {
-    if (!isConnected) return NO;
+- (void)changeDirectory:(NSString *)path {
+    if (!_isAuthenticated) {
+        return;
+    }
     
-    NSString *commandString = [NSString stringWithFormat:@"%@\r\n", command];
-    NSData *data = [commandString dataUsingEncoding:NSUTF8StringEncoding];
-    
-    if (!CFWriteStreamCanAcceptBytes(commandWriteStream)) return NO;
-    
-    CFIndex bytesWritten = CFWriteStreamWrite(commandWriteStream,
-                                            [data bytes],
-                                            [data length]);
-    
-    return (bytesWritten == [data length]);
+    NSString *cdCommand = [NSString stringWithFormat:@"CWD %@", path];
+    [self _sendCommand:cdCommand];
 }
 
-// Handle server responses here. This is a simplified version.
-// In a real implementation, you'd want to handle response codes,
-// parse directory listings, etc.
-- (void)handleResponse:(NSString *)response {
-	NSLog(@"FTP | handleResponse: %@", response);
-    NSArray *lines = [response componentsSeparatedByString:@"\r\n"];
+- (void)downloadFile:(NSString *)path {
+    if (!_isAuthenticated) {
+        return;
+    }
 	
-	int i;
-	for (i = 0; i < [lines count]; i++) {
-		NSString *line = [lines objectAtIndex:i];
-        if ([line length] < 3) continue;
-        
-        NSString *code = [line substringToIndex:3];
-		if ([code isEqualToString:@"331"]) { // username OK, need password
-			NSLog(@"FTP | asking for password");
-			NSString *passCommand = [NSString stringWithFormat:@"PASS %@", password];
-			[self sendCommand:passCommand];
-		} else if ([code isEqualToString:@"230"]) { // user logged in
-			NSLog(@"FTP | user logged in");
-			isAuthenticated = YES;
-		} else if ([code isEqualToString:@"227"]) { // Passive mode response
-            // Parse PASV response and create data connection
-            NSScanner *scanner = [NSScanner scannerWithString:line];
-            [scanner scanUpToString:@"(" intoString:NULL];
-            
-            int i1, i2, i3, i4, p1, p2;
-            char dummy;
-            [scanner scanString:@"(" intoString:NULL];
-            [scanner scanInt:&i1];
-            [scanner scanString:@"," intoString:NULL];
-            [scanner scanInt:&i2];
-            [scanner scanString:@"," intoString:NULL];
-            [scanner scanInt:&i3];
-            [scanner scanString:@"," intoString:NULL];
-            [scanner scanInt:&i4];
-            [scanner scanString:@"," intoString:NULL];
-            [scanner scanInt:&p1];
-            [scanner scanString:@"," intoString:NULL];
-            [scanner scanInt:&p2];
-            
-            int dataPort = (p1 * 256) + p2;
-            NSString *dataHost = [NSString stringWithFormat:@"%d.%d.%d.%d", 
-                                i1, i2, i3, i4];
-            
-            CFStreamCreatePairWithSocketToHost(kCFAllocatorDefault,
-                                             (CFStringRef)dataHost,
-                                             dataPort,
-                                             &dataStream,
-                                             &dataWriteStream);
-            
-            CFReadStreamOpen(dataStream);
-            CFWriteStreamOpen(dataWriteStream);
-        }
+	[path retain];
+	[_currentFile release];
+	_currentFile = path;
+    
+    // Set up data connection
+    [self _setupDataConnection];
+    
+    // Set binary mode for file transfer
+    [self _sendCommand:@"TYPE I"];
+    
+    // Send RETR command
+    NSString *retrCommand = [NSString stringWithFormat:@"RETR %@", path];
+    [self _sendCommand:retrCommand];
+}
+
+#pragma mark - Private Methods
+
+- (void)_sendCommand:(NSString *)command {
+    NSString *commandWithNewline = [command stringByAppendingString:@"\r\n"];
+    NSData *data = [commandWithNewline dataUsingEncoding:NSUTF8StringEncoding];
+    [_commandClient sendData:data];
+    
+    NSLog(@"FTP | Sent command: %@", command);
+}
+
+- (void)_setupDataConnection {
+    if (_transferMode == FTPTransferModePassive) {
+        // Request passive mode
+        [self _sendCommand:@"PASV"];
+    } else {
+        // Active mode not implemented in this example
+        NSLog(@"FTP | Active mode not implemented");
     }
+}
+
+- (void)_handlePASV:(NSString *)response {
+	NSString *numbersString = nil;
+	
+	// Find position of first parenthesis
+	unsigned int openPos = 0;
+	unsigned int closePos = 0;
+	unsigned int length = [response length];
+	unsigned int i;
+	
+	// Search for opening parenthesis
+	for (i = 0; i < length; i++) {
+		if ([response characterAtIndex:i] == '(') {
+			openPos = i;
+			break;
+		}
+	}
+
+	// Search for closing parenthesis
+	for (i = length - 1; i > openPos; i--) {
+		if ([response characterAtIndex:i] == ')') {
+			closePos = i;
+			break;
+		}
+	}
+
+	// Extract numbers if parentheses were found
+	if (openPos > 0 && closePos > openPos) {
+		numbersString = [response substringWithRange:NSMakeRange(openPos + 1,
+															 closePos - openPos - 1)];
+	
+		NSArray *components = [numbersString componentsSeparatedByString:@","];
+		NSLog(@"FTP | PASV components: %@", components);
+		if ([components count] >= 6) {
+			int p1 = [[components objectAtIndex:4] intValue];
+			int p2 = [[components objectAtIndex:5] intValue];
+			int dataPort = (p1 * 256) + p2;
+		
+			// Connect data client
+			[_dataClient setHost:_host];
+			[_dataClient setPort:dataPort];
+			[_dataClient connect];
+		}
+	}
+}
+
+- (void)_handleResponse:(NSString *)response {
+	NSLog(@"FTP | _handleResponse %@", response);
+    // Parse response code
+    if ([response length] < 3) {
+        return;
+    }
+    
+    int responseCode = [[response substringToIndex:3] intValue];
+    
+    switch (responseCode) {
+        case 220: // Service ready
+            if (!_isAuthenticated && _username) {
+                [self authenticate];
+            }
+            break;
+			
+        case 227:
+            // Entering passive mode
+            // Parse passive mode response (h1,h2,h3,h4,p1,p2)
+			[self _handlePASV:response];
+			break;
+	
+		case 331: // Username okay, need password
+			if (_password) {
+				NSString *passCommand = [NSString stringWithFormat:@"PASS %@", _password];
+				[self _sendCommand:passCommand];
+			}
+			break;
+		
+		case 230: // User logged in
+			_isAuthenticated = YES;
+			if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidAuthenticate:)]) {
+				[_delegate ftpClientDidAuthenticate:self];
+			}
+			break;
+			
+		case 421: // Timeout
+			[self disconnect];
+			break;
+		
+		default:
+			NSLog(@"FTP | default case hit");
+			break;
+	}
+}
+
+#pragma mark - TCPClientDelegate methods
+
+- (void)tcpClientDidConnect:(id)client {
+	if (client == _commandClient) {
+		_isConnected = YES;
+		
+		if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidConnect:)]) {
+			[_delegate ftpClientDidConnect:self];
+		}
+	}
+}
+
+- (void)tcpClient:(id)client didReceiveData:(NSData *)data {
+	NSLog(@"FTP | didReceiveData: %@", data);
+	if (client == _commandClient) {
+		NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+		[self _handleResponse:response];
+		[response release];
+	} else if (client == _dataClient) {
+		NSLog(@"FTP | _dataClient got data: %@", data);
+		
+		// i think if the data has a length of 0, that's the end and we should close the data connection
+		
+		// Handle data channel responses (directory listings, file downloads)
+		if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
+			NSLog(@"FTP | sending to delegate");
+			
+			NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+			NSLog(@"ooooooooooooo response: %@", response);
+			[self _handleResponse:response];
+			[response release];
+			
+			// TODO: transform data to something (string?)
+			
+			[_delegate ftpClient:self didReceiveData:data forFile:nil];
+		}
+	}
+}
+
+- (void)tcpClient:(id)client didFailWithError:(NSError *)error {
+	if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didFailWithError:)]) {
+		[_delegate ftpClient:self didFailWithError:error];
+	}
+}
+
+- (void)tcpClientDidDisconnect:(id)client {
+	if (client == _commandClient) {
+		_isConnected = NO;
+		_isAuthenticated = NO;
+		
+		if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidDisconnect:)]) {
+			[_delegate ftpClientDidDisconnect:self];
+		}
+	}
+}
+
+- (void)setDelegate:(id<FTPClientDelegate>)delegate {
+	_delegate = delegate; // Don't retain delegate
 }
 
 @end

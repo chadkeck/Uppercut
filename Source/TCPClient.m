@@ -27,7 +27,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
             
         case kCFSocketDataCallBack: {
             NSData *receivedData = (NSData *)data;
-            NSLog(@"Received %d bytes of data", [receivedData length]);
+            NSLog(@"Received %d bytes of data: %@", [receivedData length], receivedData);
             [client performSelectorOnMainThread:@selector(handleReceiveData:) 
                 withObject:receivedData waitUntilDone:NO];
             break;
@@ -199,7 +199,9 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 - (void)handleReceiveData:(NSData *)data {
     if (_delegate && [_delegate respondsToSelector:@selector(tcpClient:didReceiveData:)]) {
         [_delegate tcpClient:self didReceiveData:data];
-    }
+    } else {
+		NSLog(@"TCP | no delegate to handle received data");
+	}
 }
 
 - (void)handleError:(NSError *)error {

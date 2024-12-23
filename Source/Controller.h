@@ -36,12 +36,12 @@
 - (void)tcpClientDidDisconnect:(id)client;
 
 #pragma mark - FTPClientDelegate
-- (void)ftpClientDidConnect:(id)client;
+- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)entries;
+- (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename;
 - (void)ftpClient:(id)client didFailWithError:(NSError *)error;
-- (void)ftpClient:(id)client didReceiveData:(NSData *)data;
+- (void)ftpClientDidConnect:(id)client;
 - (void)ftpClientDidDisconnect:(id)client;
-- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)listing;
-- (void)ftpClient:(id)client didDownloadFile:(NSString *)filename;
+- (void)ftpClientDidAuthenticate:(id)client;
 
 
 @end
