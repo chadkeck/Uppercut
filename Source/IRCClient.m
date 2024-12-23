@@ -118,7 +118,7 @@
 
 - (void)disconnect {
 	[self sendMessage:@"QUIT"];
-	[[self _client] disconnect];
+	[_client disconnect];
 }
 
 - (BOOL)sendMessage:(NSString *)message {
@@ -213,7 +213,7 @@
 					[self sendMessage:@"JOIN #xbins"];
 				} else if ([possibleCommand isEqualToString:@"332"]) {
 					[self sendMessage:@"PRIVMSG #xbins !list"];
-				} else if ([possibleCommand isEqualtoString:@"PRIVMSG"]) {
+				} else if ([possibleCommand isEqualToString:@"PRIVMSG"]) {
 					NSLog(@"Got a privmsg");
 					if ([self processPrivateMessage:message]) {
 						NSDictionary *ftpConnectionDetails = [self getFTPConnectionDetails:message];
