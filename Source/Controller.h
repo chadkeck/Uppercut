@@ -3,10 +3,11 @@
 #import <Cocoa/Cocoa.h>
 #import "TCPClient.h"
 #import "IRCClient.h"
+#import "FTPClient.h"
 #import "NetworkStatusEnum.h"
 #import "NetworkStatusController.h"
 
-@interface Controller : NSObject {
+@interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
 	IBOutlet NSTextField *hostField;
 	IBOutlet NSTextField *portField;
 	IBOutlet NSButton *connectButton;
@@ -32,5 +33,14 @@
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data;
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error;
 - (void)tcpClientDidDisconnect:(id)client;
+
+#pragma mark - FTPClientDelegate
+- (void)ftpClientDidConnect:(id)client;
+- (void)ftpClient:(id)client didFailWithError:(NSError *)error;
+- (void)ftpClient:(id)client didReceiveData:(NSData *)data;
+- (void)ftpClientDidDisconnect:(id)client;
+- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)listing;
+- (void)ftpClient:(id)client didDownloadFile:(NSString *)filename;
+
 
 @end

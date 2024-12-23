@@ -24,7 +24,30 @@
 
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
 	NSLog(@"controller got ftp creds: %@", credentials);
+
+	FTPClient *ftpClient = [[FTPClient alloc] initWithHostname:[credentials objectForKey:@"host"] port:21 mode:FTPModeActive];
+	[ftpClient setDelegate:self];
 }
+
+- (void)ftpClientDidConnect:(id)client {
+	NSLog(@"controller | ftpClientDidConnect");
+}
+- (void)ftpClient:(id)client didFailWithError:(NSError *)error {
+	NSLog(@"controller | ftpClient didFailWithError %@", error);
+}
+- (void)ftpClient:(id)client didReceiveData:(NSData *)data {
+	NSLog(@"controller | ftpClient didReceiveData %@", data);
+}
+- (void)ftpClientDidDisconnect:(id)client {
+	NSLog(@"controller | ftpClientDidDisconnect");
+}
+- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)listing {
+	NSLog(@"controller | ftpClient didReceiveDirectoryListing %@", listing);
+}
+- (void)ftpClient:(id)client didDownloadFile:(NSString *)filename {
+	NSLog(@"controller | ftpClient didDownloadFile %@", filename);
+}
+
 
 - (IBAction)onClickConnect:(id)sender {
 //	[_ircClient setHost:@"irc.efnet.nl"]; // banned
