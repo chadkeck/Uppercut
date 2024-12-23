@@ -2,6 +2,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "TCPClient.h"
+#import "IRCClient.h"
 #import "NetworkStatusEnum.h"
 #import "NetworkStatusController.h"
 
@@ -16,6 +17,7 @@
 	
 	IBOutlet NetworkStatusController *networkStatusController;
 	TCPClient *_client;
+	IRCClient *_ircClient;
 }
 
 #pragma mark - UI Actions

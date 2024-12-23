@@ -27,7 +27,7 @@
 - (NSString *)_getRandomNick;
 - (NSString *)_getRandomUser;
 - (NSString *)_getRandomString:(int)length;
-- (BOOL)_answerPing:(NSString *)pingMessage;
+- (BOOL)answerPing:(NSString *)pingMessage;
 
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;

@@ -9,16 +9,39 @@
 	[_client setHost:@"localhost"];
 	[_client setPort:1234];
 	
+	_ircClient = [[IRCClient alloc] init];
+	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
 }
 
 - (void)dealloc {
 	[_client release];
+	[_ircClient release];
 	[super dealloc];
 }
 
 - (IBAction)onClickConnect:(id)sender {
+//	[_ircClient setHost:@"irc.efnet.nl"]; // banned
+//	[_ircClient setHost:@"irc.deft.com"]; // banned
+//	[_ircClient setHost:@"irc.servercentral.net"];
+//	[_ircClient setHost:@"irc.underworld.no"];
+	[_ircClient setHost:@"efnet.port80.se"];
+//	[_ircClient setHost:@"efnet.deic.eu"];
+//	[_ircClient setHost:@"irc.efnet.nl"];
+//	[_ircClient setHost:@"irc.swepipe.se"];
+//	[_ircClient setHost:@"irc.efnet.fr"];
+//	[_ircClient setHost:@"irc.choopa.net"];
+
+	[_ircClient setPort:6667];
+	[_ircClient connect];
+
+
+
+
+	return;
+
+
 	NSString *host = [hostField stringValue];
 	int port = [portField intValue];
 	

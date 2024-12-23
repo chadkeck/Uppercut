@@ -1,4 +1,5 @@
 #import "IRCClient.h"
+#import "Logger.h"
 
 @implementation IRCClient
 
@@ -9,15 +10,13 @@
         _port = 0;
         _isConnected = NO;
 		_debounceTimer = nil;
+		
+		_client = [[TCPClient alloc] init];
+		[_client setDelegate:self];
+		[_client setHost:@"localhost"];
+		[_client setPort:1234];
     }
     return self;
-}
-
-- (void)awakeFromNib {
-	_client = [[TCPClient alloc] init];
-	[_client setDelegate:self];
-	[_client setHost:@"localhost"];
-	[_client setPort:1234];
 }
 
 - (void)dealloc {
@@ -26,6 +25,7 @@
     
     // Release retained objects
     [_host release];
+	[_debounceTimer release];
     [super dealloc];
 }
 
@@ -53,11 +53,43 @@
 }
 
 - (BOOL)connect {
+	[_client setHost:[self host]];
+	[_client setPort:[self port]];
+	NSLog(@"IRC | connect to %@:%d", [_client host], [_client port]);
+	[_client connect];
     return YES;
 }
 
+- (BOOL)processPrivateMessage:(NSString *)message {
+	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
+	NSArray *components = [message componentsSeparatedByString:controlBString];
+
+	if ([components count] != 10) return NO;
+	if ([[components objectAtIndex:1] isEqualToString:@"FTP ADDRESS:"]) return YES;
+	
+	return NO;
+}
+
+- (NSDictionary *)getFTPConnectionDetails:(NSString *)message {
+	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
+	NSArray *components = [message componentsSeparatedByString:controlBString];
+
+	NSString *ftpHost = [[components objectAtIndex:2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	NSString *ftpPort = [[components objectAtIndex:4] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	NSString *ftpUsername = [[components objectAtIndex:6] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	NSString *ftpPassword = [[components objectAtIndex:8] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+		ftpHost, @"host",
+		ftpPort, @"port",
+		ftpUsername, @"username",
+		ftpPassword, @"password",
+		nil];
+	NSLog(@"connection details: %@", connectionDetails);
+	return connectionDetails;
+}
+
 - (void)disconnect {
-	// TODO: send QUIT message
+	[self sendMessage:@"QUIT"];
 }
 
 - (BOOL)sendMessage:(NSString *)message {
@@ -65,16 +97,18 @@
         return NO;
     }
 	
+	NSLog(@"IRC | sending message: %@", message);
+	
 	NSString *messageWithNewline = [message stringByAppendingString:@"\r\n"];
 	NSData *data = [messageWithNewline dataUsingEncoding:NSUTF8StringEncoding];
 	[_client sendData:data];
 	return YES;
 }
 
-- (BOOL)_answerPing:(NSString *)pingMessage {
+- (BOOL)answerPing:(NSString *)pingMessage {
 	NSArray *components = [pingMessage componentsSeparatedByString:@":"];
-	if ([components length] == 2) {
-		NSString *pongResponse = [NSString stringWithFormat:@"PONG :%@", components[1]];
+	if ([components count] == 2) {
+		NSString *pongResponse = [NSString stringWithFormat:@"PONG :%@", [components objectAtIndex:1]];
 		[self sendMessage:pongResponse];
 	}
 	return NO;
@@ -106,29 +140,71 @@
 
 // TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
+	NSLog(@"IRC | tcpClientDidConnect");
 	_isConnected = YES;
+
+	[self sendMessage:@"NICK app_learning_irc"];
+	[self sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
+//	[self sendMessage:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
+//	[self sendMessage:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
 	NSString *message = [[NSString alloc] initWithData:data 
 											  encoding:NSUTF8StringEncoding];
-	NSLog(@"Received message: %@", message);
+	NSLog(@"IRC | Received message: %@", message);
+	
+	// only listen to messages that start with colon
+	//  - Handle PRIVMSG, ERROR, PING
+	//  - split them and look for command (e.g. "001", "332")
+	
+	// after 001, send JOIN #xbins
+	// after 332, send PRIVMSG #xbins !list
+	// after PRIVMSG, if message has "FTP ADDRESS", parse it and get host, port, and credentials
+	// after ERROR, disconnect
+	
+	// example message: :irc.efnet.nl 001 {nick} :Welcome to EFNet...
 	
 	if ([message hasPrefix:@"PING "]) {
+		NSLog(@"A");
 		[self answerPing:message];
+	} else {
+		if ([message hasPrefix:@":"]) {
+			NSLog(@"B");
+			NSArray *components = [message componentsSeparatedByString:@" "];
+			if ([components count] > 0) {
+				NSString *possibleCommand = [components objectAtIndex:1];
+				NSLog(@"C possibleCommand: %@", possibleCommand);
+			if ([possibleCommand isEqualToString:@"001"]) {
+					[self sendMessage:@"JOIN #xbins"];
+				} else if ([possibleCommand isEqualToString:@"332"]) {
+					[self sendMessage:@"PRIVMSG #xbins !list"];
+				} else if ([possibleCommand isEqualtoString:@"PRIVMSG"]) {
+					NSLog(@"Got a privmsg");
+					if ([self processPrivateMessage:message]) {
+						NSDictionary *ftpConnectionDetails = [self getFTPConnectionDetails:message];
+						// get FTP credentials from message
+					} else {
+						NSLog(@"That privmsg didn't look like FTP credentials");
+					}
+				}
+			} else {
+				NSLog(@"D");
+				// no spaces in message... weird
+			}
+		}
 	}
-	
-//	[NSThread sleepUntilDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 	
 	[message release];
 }
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
-	NSLog(@"Connection failed with error: %@", error);
+	NSLog(@"IRC | Connection failed with error: %@", error);
 	_isConnected = NO;
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
+	NSLog(@"IRC | tcpClientDidDisconnect");
 	_isConnected = NO;
 }
 
