@@ -4,6 +4,7 @@
 #import "TCPClient.h"
 #import "IRCClient.h"
 #import "FTPClient.h"
+#import "FTPBrowserController.h"
 #import "NetworkStatusEnum.h"
 #import "NetworkStatusController.h"
 
@@ -20,6 +21,7 @@
 	TCPClient *_client;
 	IRCClient *_ircClient;
 	FTPClient *_ftpClient;
+	IBOutlet FTPBrowserController *_browser;
 }
 
 #pragma mark - UI Actions
@@ -34,14 +36,5 @@
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data;
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error;
 - (void)tcpClientDidDisconnect:(id)client;
-
-#pragma mark - FTPClientDelegate
-- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)entries;
-- (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename;
-- (void)ftpClient:(id)client didFailWithError:(NSError *)error;
-- (void)ftpClientDidConnect:(id)client;
-- (void)ftpClientDidDisconnect:(id)client;
-- (void)ftpClientDidAuthenticate:(id)client;
-
 
 @end

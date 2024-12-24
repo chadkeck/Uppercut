@@ -11,7 +11,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     TCPClient *client = (TCPClient *)info;
     
     switch (type) {
-        case kCFSocketConnectCallBack:
+        case kCFSocketConnectCallBack: {
             if (data == NULL) {
                 NSLog(@"Connection established successfully");
                 [client performSelectorOnMainThread:@selector(handleConnect) 
@@ -24,6 +24,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
                     withObject:error waitUntilDone:NO];
             }
             break;
+		}
             
         case kCFSocketDataCallBack: {
             NSData *receivedData = (NSData *)data;
@@ -32,6 +33,11 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
                 withObject:receivedData waitUntilDone:NO];
             break;
         }
+		
+		default: {
+			NSLog(@"TCP | WARNING | switch didn't handle callback type %d", type);
+			break;
+		}
     }
 }
 
@@ -97,6 +103,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 
 - (BOOL)connect {
     if (_socket != NULL) {
+		NSLog(@"socket is not NULL");
         return NO;
     }
     

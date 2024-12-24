@@ -14,6 +14,8 @@
 	
 	_ftpClient = nil;
 	
+	NSLog(@"CONTROLLER | awakeFromNib | _browser %@", _browser);
+	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
 }
@@ -22,6 +24,7 @@
 	[_client release];
 	[_ircClient release];
 	[_ftpClient release];
+	[_browser release];
 	[super dealloc];
 }
 
@@ -33,30 +36,13 @@
 	[_ftpClient setPort:21];
 	[_ftpClient setUsername:[credentials objectForKey:@"username"]];
 	[_ftpClient setPassword:[credentials objectForKey:@"password"]];
-	[_ftpClient setDelegate:self];
+//	[_ftpClient setDelegate:self];
 	[_ftpClient connect];
+	
+	NSLog(@"CONTROLLER | didReceiveCredentials | _browser %@", _browser);
+	
+	[_browser setFTPClient:_ftpClient];
 }
-
-- (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)entries {
-	NSLog(@"controller | ftpClient didReceiveDirectoryListing: %@", entries);
-}
-- (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
-	NSLog(@"controller | ftpClient didReceiveData: %@ for file %@", data, filename);
-}
-- (void)ftpClient:(id)client didFailWithError:(NSError *)error {
-	NSLog(@"controller | ftpClient didFailWithError: %@", error);
-}
-- (void)ftpClientDidConnect:(id)client {
-	NSLog(@"controller | ftpClientDidConnect");
-}
-- (void)ftpClientDidDisconnect:(id)client {
-	NSLog(@"controller | ftpClientDidDisconnect");
-}
-- (void)ftpClientDidAuthenticate:(id)client {
-	NSLog(@"controller | ftpClientDidAuthenticate");
-	[_ftpClient listDirectory:@""];
-}
-
 
 - (IBAction)onClickConnect:(id)sender {
 //	[_ircClient setHost:@"irc.efnet.nl"]; // banned

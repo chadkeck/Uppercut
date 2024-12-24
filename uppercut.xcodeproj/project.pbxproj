@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		5D02D0322D19F7BF0030B544 /* FTPBrowserController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D02D0312D19F7BF0030B544 /* FTPBrowserController.m */; };
 		5D0D4C182D16EC8A00BB9BA8 /* NetworkStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D0D4C162D16EC8A00BB9BA8 /* NetworkStatusController.m */; };
 		5D12D8532D174DF900CA148D /* IRCClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D12D8522D174DF900CA148D /* IRCClient.m */; };
 		5D6A46752D1994F90001639D /* FTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D6A46732D1994F90001639D /* FTPClient.m */; };
@@ -18,6 +19,7 @@
 		5DC444432D165E3700A6B02A /* status-away.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443F2D165E3700A6B02A /* status-away.tiff */; };
 		5DC444442D165E3700A6B02A /* status-idle.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444402D165E3700A6B02A /* status-idle.tiff */; };
 		5DC444452D165E3700A6B02A /* status-offline.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444412D165E3700A6B02A /* status-offline.tiff */; };
+		5DFED2FE2D1A53530028A0F1 /* FTPListParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DFED2FD2D1A53530028A0F1 /* FTPListParser.m */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
 		8D11072D0486CEB800E47090 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 29B97316FDCFA39411CA2CEA /* main.m */; settings = {ATTRIBUTES = (); }; };
@@ -33,6 +35,8 @@
 		29B97324FDCFA39411CA2CEA /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = /System/Library/Frameworks/AppKit.framework; sourceTree = "<absolute>"; };
 		29B97325FDCFA39411CA2CEA /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = /System/Library/Frameworks/Foundation.framework; sourceTree = "<absolute>"; };
 		32CA4F630368D1EE00C91783 /* Uppercut_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Uppercut_Prefix.pch; sourceTree = "<group>"; };
+		5D02D0302D19F7BF0030B544 /* FTPBrowserController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPBrowserController.h; path = Source/FTPBrowserController.h; sourceTree = "<group>"; };
+		5D02D0312D19F7BF0030B544 /* FTPBrowserController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = FTPBrowserController.m; path = Source/FTPBrowserController.m; sourceTree = "<group>"; };
 		5D0D4C152D16EC8A00BB9BA8 /* NetworkStatusController.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusController.h; path = Source/NetworkStatusController.h; sourceTree = "<group>"; };
 		5D0D4C162D16EC8A00BB9BA8 /* NetworkStatusController.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = NetworkStatusController.m; path = Source/NetworkStatusController.m; sourceTree = "<group>"; };
 		5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusEnum.h; path = Source/NetworkStatusEnum.h; sourceTree = "<group>"; };
@@ -54,6 +58,8 @@
 		5DC4443F2D165E3700A6B02A /* status-away.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-away.tiff"; path = "Resources/status-away.tiff"; sourceTree = "<group>"; };
 		5DC444402D165E3700A6B02A /* status-idle.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-idle.tiff"; path = "Resources/status-idle.tiff"; sourceTree = "<group>"; };
 		5DC444412D165E3700A6B02A /* status-offline.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-offline.tiff"; path = "Resources/status-offline.tiff"; sourceTree = "<group>"; };
+		5DFED2FC2D1A53530028A0F1 /* FTPListParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPListParser.h; path = Source/FTPListParser.h; sourceTree = "<group>"; };
+		5DFED2FD2D1A53530028A0F1 /* FTPListParser.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = FTPListParser.m; path = Source/FTPListParser.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		8D1107320486CEB800E47090 /* Uppercut.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Uppercut.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -153,6 +159,10 @@
 		5D4D538B2D16550A0070DC05 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				5DFED2FC2D1A53530028A0F1 /* FTPListParser.h */,
+				5DFED2FD2D1A53530028A0F1 /* FTPListParser.m */,
+				5D02D0302D19F7BF0030B544 /* FTPBrowserController.h */,
+				5D02D0312D19F7BF0030B544 /* FTPBrowserController.m */,
 				5D6A46722D1994F90001639D /* FTPClient.h */,
 				5D6A46732D1994F90001639D /* FTPClient.m */,
 				5D6A46742D1994F90001639D /* FTPClientDelegate.h */,
@@ -237,6 +247,8 @@
 				5D12D8532D174DF900CA148D /* IRCClient.m in Sources */,
 				5D7011E32D17A77E00DEA217 /* Logger.m in Sources */,
 				5D6A46752D1994F90001639D /* FTPClient.m in Sources */,
+				5D02D0322D19F7BF0030B544 /* FTPBrowserController.m in Sources */,
+				5DFED2FE2D1A53530028A0F1 /* FTPListParser.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

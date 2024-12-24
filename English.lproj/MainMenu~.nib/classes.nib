@@ -5,6 +5,7 @@
             CLASS = Controller; 
             LANGUAGE = ObjC; 
             OUTLETS = {
+                "_browser" = FTPBrowserController; 
                 connectButton = NSButton; 
                 dataTextView = NSTextView; 
                 hostField = NSTextField; 
@@ -13,6 +14,13 @@
                 sendDataButton = NSButton; 
                 sendDataTextField = NSTextField; 
             }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            ACTIONS = {browserSelectionDidChange = id; }; 
+            CLASS = FTPBrowserController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {"_browser" = NSBrowser; }; 
             SUPERCLASS = NSObject; 
         }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 

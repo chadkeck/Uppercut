@@ -6,7 +6,8 @@
 - (void)_sendCommand:(NSString *)command;
 - (void)_parseResponse:(NSString *)response;
 - (void)_setupDataConnection;
-- (void)_handleResponse:(NSString *)response;
+- (void)_handleCommandResponse:(NSString *)response;
+- (void)_handleDataResponse:(NSString *)response;
 - (int)_parsePortNumber:(NSString *)portString;
 @end
 
@@ -136,6 +137,7 @@
 }
 
 - (void)listDirectory:(NSString *)path {
+	NSLog(@"FTP | listDirectory %@ | _isAuthenticated %@", path, _isAuthenticated ? @"YES" : @"NO");
     if (!_isAuthenticated) {
         return;
     }
@@ -224,8 +226,7 @@
 
 	// Extract numbers if parentheses were found
 	if (openPos > 0 && closePos > openPos) {
-		numbersString = [response substringWithRange:NSMakeRange(openPos + 1,
-															 closePos - openPos - 1)];
+		numbersString = [response substringWithRange:NSMakeRange(openPos + 1, closePos - openPos - 1)];
 	
 		NSArray *components = [numbersString componentsSeparatedByString:@","];
 		NSLog(@"FTP | PASV components: %@", components);
@@ -235,15 +236,20 @@
 			int dataPort = (p1 * 256) + p2;
 		
 			// Connect data client
+			[_dataClient disconnect]; // clear any previous socket
 			[_dataClient setHost:_host];
 			[_dataClient setPort:dataPort];
-			[_dataClient connect];
+			NSLog(@"FTP | PASV | _dataClient %@", _dataClient);
+			NSLog(@"FTP | PASV | connecting to %@:%d", _host, dataPort);
+			if (![_dataClient connect]) {
+				NSLog(@"FTP | PASV | connect failed", _host, dataPort);
+			}
 		}
 	}
 }
 
-- (void)_handleResponse:(NSString *)response {
-	NSLog(@"FTP | _handleResponse %@", response);
+- (void)_handleCommandResponse:(NSString *)response {
+	NSLog(@"FTP | _handleCommandResponse %@", response);
     // Parse response code
     if ([response length] < 3) {
         return;
@@ -288,6 +294,21 @@
 	}
 }
 
+- (void)_handleDataResponse:(NSString *)response {
+	NSLog(@"FTP | _handleDataResponse %@", response);
+	if ([response length] == 0) {
+		// TODO: do something?
+		return;
+	}
+	
+	NSArray *entries = [response componentsSeparatedByString:@"\n"];
+	NSLog(@"FTP | entries count: %d", [entries count]);
+	
+	if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveDirectoryListing:)]) {
+		[_delegate ftpClient:self didReceiveDirectoryListing:entries];
+	}
+}
+
 #pragma mark - TCPClientDelegate methods
 
 - (void)tcpClientDidConnect:(id)client {
@@ -304,7 +325,7 @@
 	NSLog(@"FTP | didReceiveData: %@", data);
 	if (client == _commandClient) {
 		NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-		[self _handleResponse:response];
+		[self _handleCommandResponse:response];
 		[response release];
 	} else if (client == _dataClient) {
 		NSLog(@"FTP | _dataClient got data: %@", data);
@@ -313,16 +334,14 @@
 		
 		// Handle data channel responses (directory listings, file downloads)
 		if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
-			NSLog(@"FTP | sending to delegate");
-			
 			NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-			NSLog(@"ooooooooooooo response: %@", response);
-			[self _handleResponse:response];
+			[self _handleDataResponse:response];
 			[response release];
 			
-			// TODO: transform data to something (string?)
-			
+			NSLog(@"FTP | sending to delegate");
 			[_delegate ftpClient:self didReceiveData:data forFile:nil];
+		} else {
+			NSLog(@"WARNING | FTP | _dataClient didReceiveData no delegate");
 		}
 	}
 }
