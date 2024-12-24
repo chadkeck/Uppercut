@@ -19,6 +19,7 @@
 		5DC444432D165E3700A6B02A /* status-away.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443F2D165E3700A6B02A /* status-away.tiff */; };
 		5DC444442D165E3700A6B02A /* status-idle.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444402D165E3700A6B02A /* status-idle.tiff */; };
 		5DC444452D165E3700A6B02A /* status-offline.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC444412D165E3700A6B02A /* status-offline.tiff */; };
+		5DCC41ED2D1AEBF7009B8304 /* Uppercut.icns in Resources */ = {isa = PBXBuildFile; fileRef = 5DCC41EC2D1AEBF6009B8304 /* Uppercut.icns */; };
 		5DFED2FE2D1A53530028A0F1 /* FTPListParser.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DFED2FD2D1A53530028A0F1 /* FTPListParser.m */; };
 		8D11072A0486CEB800E47090 /* MainMenu.nib in Resources */ = {isa = PBXBuildFile; fileRef = 29B97318FDCFA39411CA2CEA /* MainMenu.nib */; };
 		8D11072B0486CEB800E47090 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -58,6 +59,7 @@
 		5DC4443F2D165E3700A6B02A /* status-away.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-away.tiff"; path = "Resources/status-away.tiff"; sourceTree = "<group>"; };
 		5DC444402D165E3700A6B02A /* status-idle.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-idle.tiff"; path = "Resources/status-idle.tiff"; sourceTree = "<group>"; };
 		5DC444412D165E3700A6B02A /* status-offline.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; name = "status-offline.tiff"; path = "Resources/status-offline.tiff"; sourceTree = "<group>"; };
+		5DCC41EC2D1AEBF6009B8304 /* Uppercut.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; name = Uppercut.icns; path = Resources/Uppercut.icns; sourceTree = "<group>"; };
 		5DFED2FC2D1A53530028A0F1 /* FTPListParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPListParser.h; path = Source/FTPListParser.h; sourceTree = "<group>"; };
 		5DFED2FD2D1A53530028A0F1 /* FTPListParser.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = FTPListParser.m; path = Source/FTPListParser.m; sourceTree = "<group>"; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -136,6 +138,7 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				5DCC41EC2D1AEBF6009B8304 /* Uppercut.icns */,
 				5DC4443E2D165E3700A6B02A /* status-available.tiff */,
 				5DC4443F2D165E3700A6B02A /* status-away.tiff */,
 				5DC444402D165E3700A6B02A /* status-idle.tiff */,
@@ -230,6 +233,7 @@
 				5DC444432D165E3700A6B02A /* status-away.tiff in Resources */,
 				5DC444442D165E3700A6B02A /* status-idle.tiff in Resources */,
 				5DC444452D165E3700A6B02A /* status-offline.tiff in Resources */,
+				5DCC41ED2D1AEBF7009B8304 /* Uppercut.icns in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
