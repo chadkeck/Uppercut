@@ -8,6 +8,16 @@
 
 @implementation FTPBrowserController
 
+- (void)_logBrowserState:(NSString *)context {
+    NSLog(@"--------------------");
+    NSLog(@"Browser State (%@)", context);
+    NSLog(@"Selected column: %d", [_browser selectedColumn]);
+    NSLog(@"Last column: %d", [_browser lastColumn]);
+    NSLog(@"Current path components: %@", _currentPath);
+    NSLog(@"Cache keys: %@", [_directoryCache allKeys]);
+    NSLog(@"--------------------");
+}
+
 - (id)init {
 	NSLog(@"BROWSER | init");
     self = [super init];
@@ -75,7 +85,7 @@
 
 - (void)_loadDirectoryAtPath:(NSString *)path {
     if (_isLoading) {
-		NSLog(@"_loadDirectoryAtPath(%@) already loading", path);
+		NSLog(@"BROWSER | WARNING | _loadDirectoryAtPath(%@) already loading", path);
         return;
     }
     
@@ -86,6 +96,7 @@
     // Check cache first
     NSArray *cachedListing = [_directoryCache objectForKey:path];
     if (cachedListing) {
+		NSLog(@"BROWSER | _loadDirectoryAtPath | CACHE HIT %@", path);
         _isLoading = NO;
         return;
     }
@@ -145,7 +156,7 @@
     NSArray *listing = [_directoryCache objectForKey:path];
 	
 //	NSLog(@"CELL | _directoryCache %@", _directoryCache);
-	NSLog(@"CELL | path %@ | listing %@", path, listing);
+//	NSLog(@"CELL | path %@ | listing %@", path, listing);
 
     if (!listing) {
         // Show loading state
@@ -182,6 +193,8 @@
 - (BOOL)browser:(NSBrowser *)sender selectRow:(int)row inColumn:(int)column {
     NSString *path = [self _pathForColumn:column];
     NSArray *listing = [_directoryCache objectForKey:path];
+	
+	[self _logBrowserState:@"Before selection"];
 
     if (!listing || row >= [listing count]) {
         return NO;
@@ -250,6 +263,8 @@
 - (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)entries {
 	NSLog(@"BROWSER | didReceiveDirectoryListing: %@", entries);
 	
+	[self _logBrowserState:@"Before adding new directory listing"];
+	
     // Convert entries into dictionaries with name and isDirectory
     NSMutableArray *listing = [NSMutableArray array];
     NSEnumerator *enumerator = [entries objectEnumerator];
@@ -263,25 +278,31 @@
 		
 		NSDictionary *fileInfo = [FTPListParser dictionaryFromLine:entry];
 		if (fileInfo) {
+//			NSLog(@"BROWSER | didReceiveDirectoryListing: parsed fileInfo %@", fileInfo);
 			[listing addObject:fileInfo];
 		} else {
 			NSLog(@"WARN | couldn't parse %@", entry);
 		}
 		
     }
-//	NSLog(@"BROWSER | listing %@", listing);
+	NSLog(@"BROWSER | listing %@", listing);
     
     // Store in cache
-    NSString *path = [self _pathForColumn:[_browser selectedColumn]];
+    NSString *path = [self _pathForColumn:[_browser selectedColumn]+1];
     [_directoryCache setObject:listing forKey:path];
 	
-	NSLog(@"BROWSER | _directoryCache %@ | _browser %@", _directoryCache, _browser);
+	NSLog(@"BROWSER | added %d files/dirs to cache at path %@", [listing count], path);
+	
+//	NSLog(@"BROWSER | _directoryCache %@", _directoryCache);
     
     _isLoading = NO;
     
     // Reload the browser column
-	NSLog(@"BROWSER | reloadColumn %d | _browser %@", [_browser selectedColumn], _browser);
-    [_browser reloadColumn:[_browser selectedColumn]];
+	NSLog(@"BROWSER | reloadColumn %d", [_browser selectedColumn]);
+	[_browser reloadColumn:[_browser selectedColumn]];
+    [_browser reloadColumn:[_browser selectedColumn]+1];
+	
+	[self _logBrowserState:@"After adding new"];
 }
 
 - (void)ftpClient:(id)client didFailWithError:(NSError *)error {
