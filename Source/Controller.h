@@ -9,13 +9,7 @@
 #import "NetworkStatusController.h"
 
 @interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
-	IBOutlet NSTextField *hostField;
-	IBOutlet NSTextField *portField;
 	IBOutlet NSButton *connectButton;
-	
-	IBOutlet NSTextField *sendDataTextField;
-	IBOutlet NSButton *sendDataButton;
-	IBOutlet NSTextView *dataTextView;
 	
 	IBOutlet NetworkStatusController *networkStatusController;
 	TCPClient *_client;
@@ -26,7 +20,6 @@
 
 #pragma mark - UI Actions
 - (IBAction)onClickConnect:(id)sender;
-- (IBAction)onClickSendData:(id)sender;
 
 #pragma mark - IRCClientDelegate
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
