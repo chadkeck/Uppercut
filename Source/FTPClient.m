@@ -146,8 +146,15 @@
     [self _setupDataConnection];
     
     // Send LIST command
-    NSString *listCommand = path ? [NSString stringWithFormat:@"LIST %@", path] : @"LIST";
-    [self _sendCommand:listCommand];
+	if ([path length] > 0) {
+		NSString *listCommand = [path rangeOfString:@" "].location != NSNotFound ?
+			[NSString stringWithFormat:@"LIST \"%@\"", path]
+			: [NSString stringWithFormat:@"LIST %@", path];
+			
+		[self _sendCommand:listCommand];
+	} else {
+		[self _sendCommand:@"LIST"];
+	}
 }
 
 - (void)changeDirectory:(NSString *)path {
@@ -186,7 +193,7 @@
     NSData *data = [commandWithNewline dataUsingEncoding:NSUTF8StringEncoding];
     [_commandClient sendData:data];
     
-    NSLog(@"FTP | Sent command: %@", command);
+    NSLog(@"FTP | Sent command: (%@)", command);
 }
 
 - (void)_setupDataConnection {
@@ -252,6 +259,7 @@
 	NSLog(@"FTP | _handleCommandResponse %@", response);
     // Parse response code
     if ([response length] < 3) {
+		NSLog(@"FTP | WARNING | response length < 3");
         return;
     }
     
@@ -264,13 +272,17 @@
             }
             break;
 			
+		case 226: // Directory send OK
+			// TODO: might have to use this when an empty directory is navigated to since the data client doesn't seem to get any data
+			break;
+			
         case 227:
             // Entering passive mode
             // Parse passive mode response (h1,h2,h3,h4,p1,p2)
 			[self _handlePASV:response];
 			break;
 	
-		case 331: // Username okay, need password
+		case 331: // Username OK, need password
 			if (_password) {
 				NSString *passCommand = [NSString stringWithFormat:@"PASS %@", _password];
 				[self _sendCommand:passCommand];
@@ -322,13 +334,17 @@
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
-	NSLog(@"FTP | didReceiveData: %@", data);
+//	NSLog(@"FTP | didReceiveData: %@", data);
+	NSString *dataAsString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+	BOOL isCommandClient = (client == _commandClient);
+	NSLog(@"FTP | didReceiveData for client %@ | as string (%@)", isCommandClient ? @"Command" : @"Data", dataAsString);
+	
 	if (client == _commandClient) {
 		NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
 		[self _handleCommandResponse:response];
 		[response release];
 	} else if (client == _dataClient) {
-		NSLog(@"FTP | _dataClient got data: %@", data);
+		NSLog(@"FTP | _dataClient got data of length: %d", [data length]);
 		
 		// i think if the data has a length of 0, that's the end and we should close the data connection
 		

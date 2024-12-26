@@ -246,8 +246,10 @@
     if (selectedItem && ![selectedItem isEqualToString:@"Loading..."]) {
         // Update current path
         while ([_currentPath count] > [_browser selectedColumn] + 1) {
+			NSLog(@"BROWSER | removing last object from (%@)", _currentPath);
             [_currentPath removeLastObject];
         }
+		NSLog(@"BROWSER | adding object to _currentPath (%@)", selectedItem);
         [_currentPath addObject:selectedItem];
 
         // Load the next directory if this is a directory
@@ -298,9 +300,11 @@
     _isLoading = NO;
     
     // Reload the browser column
-	NSLog(@"BROWSER | reloadColumn %d", [_browser selectedColumn]);
-	[_browser reloadColumn:[_browser selectedColumn]];
-    [_browser reloadColumn:[_browser selectedColumn]+1];
+//	NSLog(@"BROWSER | reloadColumn %d", [_browser selectedColumn]);
+	[_browser reloadColumn:[_browser lastColumn]];
+//    [_browser reloadColumn:[_browser selectedColumn]+1];
+
+
 	
 	[self _logBrowserState:@"After adding new"];
 }

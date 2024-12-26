@@ -28,7 +28,8 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
             
         case kCFSocketDataCallBack: {
             NSData *receivedData = (NSData *)data;
-            NSLog(@"Received %d bytes of data: %@", [receivedData length], receivedData);
+//            NSLog(@"Received %d bytes of data: %@", [receivedData length], receivedData);
+			NSLog(@"TCP | Received %d bytes of data", [receivedData length]);
             [client performSelectorOnMainThread:@selector(handleReceiveData:) 
                 withObject:receivedData waitUntilDone:NO];
             break;
