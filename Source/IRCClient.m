@@ -58,8 +58,8 @@
 	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
 		@"192.168.1.100", @"host",
 		@"21", @"port",
-		@"pi", @"username",
-		@"test_password", @"password",
+		@"ftpuser", @"username",
+		@"ftptest", @"password",
 		nil];
 	NSLog(@"fake details %@", connectionDetails);
 	NSLog(@"_delegate: %@", _delegate);
