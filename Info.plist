@@ -9,7 +9,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Uppercut.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.yourcompany.Uppercut</string>
+	<string>com.dregsoft.Uppercut</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
