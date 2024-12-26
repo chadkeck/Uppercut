@@ -238,26 +238,49 @@
     return [_directoryCache objectForKey:path] != nil;
 }
 
+id findEntryWithFilename(NSArray *array, NSString *filename) {
+    NSEnumerator *enumerator = [array objectEnumerator];
+    id entry;
+	   
+    while ((entry = [enumerator nextObject])) {
+		if ([[entry valueForKey:@"filename"] isEqualToString:filename]) {
+			return entry;
+		}
+	}
+	return nil;
+}
+
 - (void)browserSelectionDidChange:(id)sender {
     NSString *path = [self _pathForColumn:[_browser selectedColumn]];
     NSString *selectedItem = [[_browser selectedCell] stringValue];
 	NSLog(@"BROWSER | browserSelectionDidChange | selectedItem %@", selectedItem);
 
-    if (selectedItem && ![selectedItem isEqualToString:@"Loading..."]) {
-        // Update current path
-        while ([_currentPath count] > [_browser selectedColumn] + 1) {
-			NSLog(@"BROWSER | removing last object from (%@)", _currentPath);
-            [_currentPath removeLastObject];
-        }
-		NSLog(@"BROWSER | adding object to _currentPath (%@)", selectedItem);
-        [_currentPath addObject:selectedItem];
+    if (selectedItem && [selectedItem isEqualToString:@"Loading..."]) return;
+	
+	int selectedColumn = [_browser selectedColumn];
+	int nextColumn = selectedColumn + 1;
 
-        // Load the next directory if this is a directory
-        if (![[_browser selectedCell] isLeaf]) {
-            NSString *newPath = [self _pathForColumn:[_browser selectedColumn] + 1];
-            [self _loadDirectoryAtPath:newPath];
-        }
+    // Update current path
+    while ([_currentPath count] > nextColumn) {
+		NSLog(@"BROWSER | removing last object from (%@)", _currentPath);
+        [_currentPath removeLastObject];
     }
+	NSLog(@"BROWSER | adding object to _currentPath (%@)", selectedItem);
+    [_currentPath addObject:selectedItem];
+
+    // Load the next directory if this is a directory
+    if (![[_browser selectedCell] isLeaf]) {
+        NSString *newPath = [self _pathForColumn:nextColumn];
+        [self _loadDirectoryAtPath:newPath];
+	} else {
+		NSArray *entries = [_directoryCache objectForKey:path];
+		NSDictionary *entry = findEntryWithFilename(entries, selectedItem);
+
+		NSLog(@"item clicked: %@", entry);
+				
+		// TODO: do something with the clicked file
+	}
+
 }
 
 #pragma mark - FTPClientDelegate Methods
