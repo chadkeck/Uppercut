@@ -1,18 +1,13 @@
 {
     IBClasses = (
         {
-            ACTIONS = {onClickConnect = id; onClickSendData = id; }; 
+            ACTIONS = {onClickConnect = id; }; 
             CLASS = Controller; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 "_browser" = FTPBrowserController; 
                 connectButton = NSButton; 
-                dataTextView = NSTextView; 
-                hostField = NSTextField; 
                 networkStatusController = NetworkStatusController; 
-                portField = NSTextField; 
-                sendDataButton = NSButton; 
-                sendDataTextField = NSTextField; 
             }; 
             SUPERCLASS = NSObject; 
         }, 

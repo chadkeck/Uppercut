@@ -136,6 +136,29 @@
     [self _sendCommand:userCommand];
 }
 
+- (NSString *)escapeSpacesInString:(NSString *)input {
+	if (!input) return nil;
+
+	NSMutableString *output = [NSMutableString stringWithString:input];
+
+	// Define replacements
+	NSDictionary *replacements = [NSDictionary dictionaryWithObjectsAndKeys:
+		@" ", @"\\ ",
+		nil];
+
+	// Perform replacements
+	NSEnumerator *enumerator = [replacements keyEnumerator];
+	NSString *character;
+	while ((character = [enumerator nextObject])) {
+		[output replaceOccurrencesOfString:character
+								withString:[replacements objectForKey:character]
+								   options:NSLiteralSearch
+									 range:NSMakeRange(0, [output length])];
+	}
+
+	return output;
+}
+
 - (void)listDirectory:(NSString *)path {
 	NSLog(@"FTP | listDirectory %@ | _isAuthenticated %@", path, _isAuthenticated ? @"YES" : @"NO");
     if (!_isAuthenticated) {
@@ -147,10 +170,8 @@
     
     // Send LIST command
 	if ([path length] > 0) {
-		NSString *listCommand = [path rangeOfString:@" "].location != NSNotFound ?
-			[NSString stringWithFormat:@"LIST \"%@\"", path]
-			: [NSString stringWithFormat:@"LIST %@", path];
-			
+		NSString *escapedPath = [self escapeSpacesInString:path];
+		NSString *listCommand = [NSString stringWithFormat:@"LIST %@", escapedPath];
 		[self _sendCommand:listCommand];
 	} else {
 		[self _sendCommand:@"LIST"];
@@ -168,6 +189,7 @@
 
 - (void)downloadFile:(NSString *)path {
     if (!_isAuthenticated) {
+		NSLog(@"FTP | WARNING | downloadFile called when not authenticated");
         return;
     }
 	
