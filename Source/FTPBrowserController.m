@@ -276,9 +276,9 @@ id findEntryWithFilename(NSArray *array, NSString *filename) {
 		NSArray *entries = [_directoryCache objectForKey:path];
 		NSDictionary *entry = findEntryWithFilename(entries, selectedItem);
 
-		NSLog(@"item clicked: %@", entry);
-				
-		// TODO: do something with the clicked file
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"fileClicked"
+															object:self
+														  userInfo:entry];
 	}
 
 }

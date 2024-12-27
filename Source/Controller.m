@@ -14,16 +14,26 @@
 	
 	_ftpClient = nil;
 	
-	NSLog(@"CONTROLLER | awakeFromNib | _browser %@", _browser);
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(handleFileClicked:)
+												 name:@"fileClicked"
+											   object:nil];
 	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
+}
+
+- (void)handleFileClicked:(NSNotification *)notification {
+	NSDictionary *fileInfo = [notification userInfo];
+	NSLog(@"CONTROLLER | Received 'fileClicked' with %@", fileInfo);
 }
 
 - (void)dealloc {
 	[_client release];
 	[_ircClient release];
 	[_ftpClient release];
+	
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_browser release];
 	[super dealloc];
 }
