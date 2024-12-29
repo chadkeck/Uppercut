@@ -46,7 +46,6 @@
 	[_ftpClient setPort:21];
 	[_ftpClient setUsername:[credentials objectForKey:@"username"]];
 	[_ftpClient setPassword:[credentials objectForKey:@"password"]];
-//	[_ftpClient setDelegate:self];
 	[_ftpClient connect];
 	
 	NSLog(@"CONTROLLER | didReceiveCredentials | _browser %@", _browser);
@@ -55,34 +54,22 @@
 }
 
 - (IBAction)onClickConnect:(id)sender {
-//	[_ircClient setHost:@"irc.efnet.nl"]; // banned
-//	[_ircClient setHost:@"irc.deft.com"]; // banned
-//	[_ircClient setHost:@"irc.servercentral.net"];
-//	[_ircClient setHost:@"irc.underworld.no"];
-	[_ircClient setHost:@"efnet.port80.se"];
-//	[_ircClient setHost:@"efnet.deic.eu"];
-//	[_ircClient setHost:@"irc.efnet.nl"];
-//	[_ircClient setHost:@"irc.swepipe.se"];
-//	[_ircClient setHost:@"irc.efnet.fr"];
-//	[_ircClient setHost:@"irc.choopa.net"];
+    NSArray *efnetServers = [NSArray arrayWithObjects:
+		@"irc.efnet.nl", // banned
+		@"irc.deft.com", // banned
+		@"irc.servercentral.net",
+		@"irc.underworld.no",
+		@"efnet.port80.se",
+		@"efnet.deic.eu",
+		@"irc.swepipe.se",
+		@"irc.efnet.fr",
+		@"irc.choopa.net",
+		nil];
 
+	int randomIndex = arc4random() % [efnetServers count];
+	[_ircClient setHost:[efnetServers objectAtIndex:randomIndex]];
 	[_ircClient setPort:6667];
 	[_ircClient connect];
-
-
-
-
-	return;
-
-
-	if (![_client isConnected]) {
-//		[[Logger sharedInstance] log:[NSString stringWithFormat:@"Connecting to %@:%d", host, port]];
-
-		[_client connect];
-		[networkStatusController setConnectionState:NetworkStatusStateWaiting];
-	} else {
-		[_client disconnect];
-	}
 }
 
 // TCPClientDelegate methods

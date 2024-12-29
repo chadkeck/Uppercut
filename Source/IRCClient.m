@@ -32,6 +32,7 @@
 }
 
 - (void)setHost:(NSString *)host {
+	NSLog(@"IRC CLIENT  | setHost (%@)", host);
     // Retain new value, release old value
     [host retain];
     [_host release];
@@ -61,8 +62,8 @@
 		@"ftpuser", @"username",
 		@"ftptest", @"password",
 		nil];
-	NSLog(@"fake details %@", connectionDetails);
-	NSLog(@"_delegate: %@", _delegate);
+	NSLog(@"IRC CLIENT | fake details %@", connectionDetails);
+	
 	if (_delegate && [_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
 		[_delegate ircClient:self didReceiveCredentials:connectionDetails];
 	}
