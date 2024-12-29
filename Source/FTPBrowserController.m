@@ -64,8 +64,7 @@
         [client retain];
         [_ftpClient release];
         _ftpClient = client;
-        
-        // Set ourselves as the delegate
+
         [_ftpClient setDelegate:self];
     }
 }
