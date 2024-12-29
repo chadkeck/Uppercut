@@ -52,8 +52,6 @@
     [_browser setAllowsMultipleSelection:NO];
     [_browser setAllowsEmptySelection:NO];
     [_browser setHasHorizontalScroller:YES];
-    [_browser setTitled:YES];
-    [_browser setTakesTitleFromPreviousColumn:YES];
     
     // Load initial directory
     [self refresh];
