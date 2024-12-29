@@ -39,6 +39,7 @@
     [_ftpClient release];
     [_directoryCache release];
     [_currentPath release];
+	[_browser release];
     
     [super dealloc];
 }
