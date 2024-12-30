@@ -52,8 +52,7 @@
     [scanner scanUpToCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&dummy];
 
     // Scan file size
-//    unsigned long long fileSize;
-	long long fileSize; // FIXME: this is probably wrong for 64-bit (needs scanUnsignedLongLong)
+	long long fileSize;
     if ([scanner scanLongLong:&fileSize]) {
         [entry setObject:[NSNumber numberWithUnsignedLongLong:fileSize] forKey:@"fileSize"];
     }

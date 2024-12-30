@@ -152,7 +152,6 @@
 	return [self _getRandomString:10];
 }
 
-// FIXME: this will probably be wrong on 64-bit systems
 - (NSString *)_getRandomString:(int)length {
     static NSString *letters = @"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     NSMutableString *randomString = [NSMutableString stringWithCapacity:length];
