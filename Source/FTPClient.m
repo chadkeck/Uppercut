@@ -321,6 +321,10 @@
 		case 421: // Timeout
 			[self disconnect];
 			break;
+			
+		case 530: // Permission denied
+			[self disconnect];
+			break;
 		
 		default:
 			NSLog(@"FTP | default case hit");
@@ -385,6 +389,7 @@
 }
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
+	NSLog(@"FTP | tcpClient didFailWithError (%@)", error);
 	if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didFailWithError:)]) {
 		[_delegate ftpClient:self didFailWithError:error];
 	}
