@@ -196,15 +196,12 @@
 	// example message: :irc.efnet.nl 001 {nick} :Welcome to EFNet...
 	
 	if ([message hasPrefix:@"PING "]) {
-		NSLog(@"A");
 		[self answerPing:message];
 	} else {
 		if ([message hasPrefix:@":"]) {
-			NSLog(@"B");
 			NSArray *components = [message componentsSeparatedByString:@" "];
 			if ([components count] > 0) {
 				NSString *possibleCommand = [components objectAtIndex:1];
-				NSLog(@"C possibleCommand: %@", possibleCommand);
 			if ([possibleCommand isEqualToString:@"001"]) {
 					[self sendMessage:@"JOIN #xbins"];
 				} else if ([possibleCommand isEqualToString:@"332"]) {
@@ -218,12 +215,9 @@
 						}
 
 						[self disconnect];
-					} else {
-						NSLog(@"That privmsg didn't look like FTP credentials");
 					}
 				}
 			} else {
-				NSLog(@"D");
 				// no spaces in message... weird
 			}
 		}
