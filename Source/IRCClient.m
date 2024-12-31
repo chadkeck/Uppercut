@@ -12,10 +12,10 @@
 		_debounceTimer = nil;
 		_delegate = nil;
 		
-		_client = [[TCPClient alloc] init];
-		[_client setDelegate:self];
-		[_client setHost:@"localhost"];
-		[_client setPort:1234];
+		_tcpClient = [[TCPClient alloc] init];
+		[_tcpClient setDelegate:self];
+		[_tcpClient setHost:@"localhost"];
+		[_tcpClient setPort:1234];
     }
     return self;
 }
@@ -25,7 +25,7 @@
     [self disconnect];
     
     // Release retained objects
-	[_client release];
+	[_tcpClient release];
 	[_host release];
 	[_debounceTimer release];
     [super dealloc];
@@ -77,10 +77,10 @@
 
 
 /*
-	[_client setHost:[self host]];
-	[_client setPort:[self port]];
-	NSLog(@"IRC | connect to %@:%d", [_client host], [_client port]);
-	[_client connect];
+	[_tcpClient setHost:[self host]];
+	[_tcpClient setPort:[self port]];
+	NSLog(@"IRC | connect to %@:%d", [_tcpClient host], [_tcpClient port]);
+	[_tcpClient connect];
     return YES;
 */
 }
@@ -115,7 +115,7 @@
 
 - (void)disconnect {
 	[self sendMessage:@"QUIT"];
-	[_client disconnect];
+	[_tcpClient disconnect];
 }
 
 - (BOOL)sendMessage:(NSString *)message {
@@ -127,7 +127,7 @@
 	
 	NSString *messageWithNewline = [message stringByAppendingString:@"\r\n"];
 	NSData *data = [messageWithNewline dataUsingEncoding:NSUTF8StringEncoding];
-	[_client sendData:data];
+	[_tcpClient sendData:data];
 	return YES;
 }
 

@@ -3,7 +3,7 @@
 #import "TCPClient.h"
 
 @interface IRCClient : NSObject {
-    TCPClient *_client;
+    TCPClient *_tcpClient;
     NSString *_host;
     int _port;
     BOOL _isConnected;
