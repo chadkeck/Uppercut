@@ -1,5 +1,6 @@
 #import "FTPBrowserController.h"
 #import "FTPListParser.h"
+#import "NetworkStatusEnum.h"
 
 @interface FTPBrowserController (Private)
 - (void)_loadDirectoryAtPath:(NSString *)path;
@@ -122,11 +123,30 @@
 - (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
 //	NSLog(@"BROWSER | ftpClient didReceiveData: %@ for file %@", data, filename);
 }
+
 - (void)ftpClientDidConnect:(id)client {
 	NSLog(@"BROWSER | ftpClientDidConnect");
+	
+	NSNumber *numState = [NSNumber numberWithInt:NetworkStatusStateConnected];
+	NSDictionary *connectionInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"FTP Connected", @"update",
+		numState, @"state",
+		nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"connectionUpdate"
+													object:self
+												  userInfo:connectionInfo];
 }
 - (void)ftpClientDidDisconnect:(id)client {
 	NSLog(@"BROWSER | ftpClientDidDisconnect");
+	
+	NSNumber *numState = [NSNumber numberWithInt:NetworkStatusStateDisconnected];
+	NSDictionary *connectionInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"FTP Disconnected", @"update",
+		numState, @"state",
+		nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"connectionUpdate"
+													object:self
+												  userInfo:connectionInfo];
 }
 - (void)ftpClientDidAuthenticate:(id)client {
 	NSLog(@"BROWSER | ftpClientDidAuthenticate");
