@@ -76,24 +76,20 @@
 
 
 
-
-
-
-
-
-
+/*
 	[_client setHost:[self host]];
 	[_client setPort:[self port]];
 	NSLog(@"IRC | connect to %@:%d", [_client host], [_client port]);
 	[_client connect];
     return YES;
+*/
 }
 
 - (BOOL)processPrivateMessage:(NSString *)message {
 	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
 	NSArray *components = [message componentsSeparatedByString:controlBString];
 
-	if ([components count] != 10) return NO;
+	if ([components count] != 11) return NO;
 	if ([[components objectAtIndex:1] isEqualToString:@"FTP ADDRESS:"]) return YES;
 	
 	return NO;
