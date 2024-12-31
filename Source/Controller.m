@@ -33,7 +33,7 @@
 }
 
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
-	NSLog(@"controller got ftp creds: %@", credentials);
+	NSLog(@"CONTROLLER | didReceiveCredentials | credentials: (%@)", credentials);
 
 	_ftpClient = [[FTPClient alloc] init];
 	[_ftpClient setHost:[credentials objectForKey:@"host"]];
