@@ -4,11 +4,6 @@
 @implementation Controller
 
 - (void)awakeFromNib {
-	_client = [[TCPClient alloc] init];
-	[_client setDelegate:self];
-	[_client setHost:@"localhost"];
-	[_client setPort:1234];
-	
 	_ircClient = [[IRCClient alloc] init];
 	[_ircClient setDelegate:self];
 	
@@ -29,7 +24,6 @@
 }
 
 - (void)dealloc {
-	[_client release];
 	[_ircClient release];
 	[_ftpClient release];
 	
@@ -72,41 +66,4 @@
 	[_ircClient connect];
 }
 
-// TCPClientDelegate methods
-- (void)tcpClientDidConnect:(id)client {
-	[[Logger sharedInstance] log:@"Connected"];
-	
-	[connectButton setTitle:@"Disconnect"];
-	[networkStatusController setConnectionState:NetworkStatusStateConnected];
-
-}
-
-- (void)tcpClient:(id)client didReceiveData:(NSData *)data {
-	NSString *message = [[NSString alloc] initWithData:data 
-											  encoding:NSUTF8StringEncoding];
-
-	// check for disconnect
-	if ([data length] == 0) {
-		[self tcpClientDidDisconnect:client];
-	} else {
-		[[Logger sharedInstance] log:[NSString stringWithFormat:@"Received message: %@", message]];
-	}
-	
-	[message release];
-}
-
-- (void)tcpClient:(id)client didFailWithError:(NSError *)error {
-	NSLog(@"Connection failed with error: %@", error);
-	[[Logger sharedInstance] log:[NSString stringWithFormat:@"Connection failed with error: %@", error]];
-
-	[connectButton setTitle:@"Connect"];
-	[networkStatusController setConnectionState:NetworkStatusStateDisconnected];
-}
-
-- (void)tcpClientDidDisconnect:(id)client {
-	[[Logger sharedInstance] log:@"Disconnected"];
-	
-	[connectButton setTitle:@"Connect"];
-	[networkStatusController setConnectionState:NetworkStatusStateDisconnected];
-}
 @end
