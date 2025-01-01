@@ -106,19 +106,54 @@
 
 - (NSString *)_pathForColumn:(int)column {
     NSMutableString *path = [NSMutableString string];
-    int i;
+    NSLog(@"BROWSER | _pathForColumn START");
+    NSLog(@"  Column requested: %d", column);
+    NSLog(@"  Current path array: %@", _currentPath);
 
-    // Build path from components up to this column
-    for (i = 0; i <= column && i < [_currentPath count]; i++) {
-        [path appendString:[_currentPath objectAtIndex:i]];
-        if (i < column && ![[path substringFromIndex:[path length] - 1] isEqualToString:@"/"]) {
+    // Always start with root
+    [path appendString:@"/"];
+
+    // Don't include the root slash from _currentPath if it's there
+    int startIndex = [[_currentPath objectAtIndex:0] isEqualToString:@"/"] ? 1 : 0;
+
+    // Only process up to the requested column
+    int endIndex = column + 1;
+    if (endIndex > [_currentPath count]) {
+        endIndex = [_currentPath count];
+    }
+
+    NSLog(@"  Processing components from index %d to %d", startIndex, endIndex);
+
+    int i;
+    for (i = startIndex; i < endIndex; i++) {
+        NSString *component = [_currentPath objectAtIndex:i];
+
+        // Skip empty components
+        if ([component length] == 0) {
+            continue;
+        }
+
+        // Skip if it's just a slash
+        if ([component isEqualToString:@"/"]) {
+            continue;
+        }
+
+        // Remove leading slash from component if present
+        if ([component hasPrefix:@"/"]) {
+            component = [component substringFromIndex:1];
+        }
+
+        // Add component with leading slash if needed
+        if (![path hasSuffix:@"/"]) {
             [path appendString:@"/"];
         }
+        [path appendString:component];
     }
-	NSLog(@"BROWSER | _pathForColumn(%d) returns %@", column, path);
+
+    NSLog(@"  Final path: %@", path);
+    NSLog(@"BROWSER | _pathForColumn END");
     return path;
 }
-
 
 - (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
 //	NSLog(@"BROWSER | ftpClient didReceiveData: %@ for file %@", data, filename);
