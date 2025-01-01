@@ -1,6 +1,11 @@
 #import "FTPClient.h"
 #import <Foundation/NSRange.h>
 
+typedef enum {
+    FTPTransferTypeDirectory,
+    FTPTransferTypeFile
+} FTPTransferType;
+
 // Private interface
 @interface FTPClient (Private)
 - (void)_sendCommand:(NSString *)command;
@@ -9,6 +14,7 @@
 - (void)_handleCommandResponse:(NSString *)response;
 - (void)_handleDataResponse:(NSString *)response;
 - (int)_parsePortNumber:(NSString *)portString;
+FTPTransferType _currentTransferType;
 @end
 
 @implementation FTPClient
@@ -160,22 +166,21 @@
 }
 
 - (void)listDirectory:(NSString *)path {
-	NSLog(@"FTP | listDirectory %@ | _isAuthenticated %@", path, _isAuthenticated ? @"YES" : @"NO");
+    NSLog(@"FTP | listDirectory %@ | _isAuthenticated %@", path, _isAuthenticated ? @"YES" : @"NO");
     if (!_isAuthenticated) {
         return;
     }
-    
-    // Set up data connection first
+
+    _currentTransferType = FTPTransferTypeDirectory;
     [self _setupDataConnection];
-    
-    // Send LIST command
-	if ([path length] > 0) {
-		NSString *escapedPath = [self escapeSpacesInString:path];
-		NSString *listCommand = [NSString stringWithFormat:@"LIST %@", escapedPath];
-		[self _sendCommand:listCommand];
-	} else {
-		[self _sendCommand:@"LIST"];
-	}
+
+    if ([path length] > 0) {
+        NSString *escapedPath = [self escapeSpacesInString:path];
+        NSString *listCommand = [NSString stringWithFormat:@"LIST %@", escapedPath];
+        [self _sendCommand:listCommand];
+    } else {
+        [self _sendCommand:@"LIST"];
+    }
 }
 
 - (void)changeDirectory:(NSString *)path {
@@ -188,22 +193,22 @@
 }
 
 - (void)downloadFile:(NSString *)path {
+    NSLog(@"FTP | downloadFile(%@)", path);
+
     if (!_isAuthenticated) {
-		NSLog(@"FTP | WARNING | downloadFile called when not authenticated");
+        NSLog(@"FTP | WARNING | downloadFile called when not authenticated");
         return;
     }
-	
-	[path retain];
-	[_currentFile release];
-	_currentFile = path;
-    
-    // Set up data connection
+
+    [path retain];
+    [_currentFile release];
+    _currentFile = path;
+
+    _currentTransferType = FTPTransferTypeFile;
     [self _setupDataConnection];
-    
-    // Set binary mode for file transfer
+
     [self _sendCommand:@"TYPE I"];
-    
-    // Send RETR command
+
     NSString *retrCommand = [NSString stringWithFormat:@"RETR %@", path];
     [self _sendCommand:retrCommand];
 }
@@ -333,18 +338,22 @@
 }
 
 - (void)_handleDataResponse:(NSString *)response {
-	NSLog(@"FTP | _handleDataResponse %@", response);
-	if ([response length] == 0) {
-		// TODO: do something?
-		return;
-	}
-	
-	NSArray *entries = [response componentsSeparatedByString:@"\n"];
-	NSLog(@"FTP | entries count: %d", [entries count]);
-	
-	if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveDirectoryListing:)]) {
-		[_delegate ftpClient:self didReceiveDirectoryListing:entries];
-	}
+    NSLog(@"FTP | _handleDataResponse for type %d", _currentTransferType);
+
+    if (_currentTransferType == FTPTransferTypeDirectory) {
+        // Handle directory listing
+        if ([response length] == 0) {
+            return;
+        }
+
+        NSArray *entries = [response componentsSeparatedByString:@"\n"];
+        NSLog(@"FTP | entries count: %d", [entries count]);
+
+        if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveDirectoryListing:)]) {
+            [_delegate ftpClient:self didReceiveDirectoryListing:entries];
+        }
+    }
+    // For file transfers, we don't convert to string - pass raw data to delegate
 }
 
 #pragma mark - TCPClientDelegate methods
@@ -360,32 +369,24 @@
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
-//	NSLog(@"FTP | didReceiveData: %@", data);
-	NSString *dataAsString = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-	BOOL isCommandClient = (client == _commandClient);
-	NSLog(@"FTP | didReceiveData for client %@ | as string (%@)", isCommandClient ? @"Command" : @"Data", dataAsString);
-	
-	if (client == _commandClient) {
-		NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-		[self _handleCommandResponse:response];
-		[response release];
-	} else if (client == _dataClient) {
-		NSLog(@"FTP | _dataClient got data of length: %d", [data length]);
-		
-		// i think if the data has a length of 0, that's the end and we should close the data connection
-		
-		// Handle data channel responses (directory listings, file downloads)
-		if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
-			NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
-			[self _handleDataResponse:response];
-			[response release];
-			
-			NSLog(@"FTP | sending to delegate");
-			[_delegate ftpClient:self didReceiveData:data forFile:nil];
-		} else {
-			NSLog(@"WARNING | FTP | _dataClient didReceiveData no delegate");
-		}
-	}
+    if (client == _commandClient) {
+        NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+        [self _handleCommandResponse:response];
+        [response release];
+    } else if (client == _dataClient) {
+        NSLog(@"FTP | _dataClient got data of length: %d", [data length]);
+
+        if (_currentTransferType == FTPTransferTypeDirectory) {
+            NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+            [self _handleDataResponse:response];
+            [response release];
+        } else {
+            // For file downloads, pass the raw data directly
+            if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
+                [_delegate ftpClient:self didReceiveData:data forFile:_currentFile];
+            }
+        }
+    }
 }
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {

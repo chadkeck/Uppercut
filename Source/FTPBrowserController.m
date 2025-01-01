@@ -5,6 +5,8 @@
 @interface FTPBrowserController (Private)
 - (void)_loadDirectoryAtPath:(NSString *)path;
 - (NSString *)_pathForColumn:(int)column;
+NSMutableData *_downloadBuffer;
+NSString *_downloadFilename;
 @end
 
 @implementation FTPBrowserController
@@ -27,7 +29,9 @@
         _directoryCache = [[NSMutableDictionary alloc] init];
         _currentPath = [[NSMutableArray alloc] init];
         _isLoading = NO;
-        
+        _downloadBuffer = [[NSMutableData alloc] init];
+        _downloadFilename = nil;
+
         // Add root path
         [_currentPath addObject:@"/"];
     }
@@ -41,7 +45,9 @@
     [_directoryCache release];
     [_currentPath release];
 	[_browser release];
-    
+    [_downloadBuffer release];
+    [_downloadFilename release];
+
     [super dealloc];
 }
 
@@ -156,7 +162,104 @@
 }
 
 - (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
-//	NSLog(@"BROWSER | ftpClient didReceiveData: %@ for file %@", data, filename);
+    if (!filename) return;
+
+    // Store filename if this is the start of a download
+    if (!_downloadFilename) {
+        [_downloadFilename release];
+        _downloadFilename = [[filename lastPathComponent] retain];
+        [_downloadBuffer setLength:0];
+        NSLog(@"Starting download of file: %@", _downloadFilename);
+    }
+
+    // Append the data to our buffer
+    [_downloadBuffer appendData:data];
+    NSLog(@"Received %d bytes of data", [data length]);
+
+    // Check if this is the end of the transfer (data length of 0)
+    if ([data length] == 0) {
+        // Get user's home directory
+        NSString *homeDir = NSHomeDirectory();
+
+        // Construct path to Downloads folder
+        NSString *downloadsPath = [homeDir stringByAppendingPathComponent:@"Downloads"];
+
+        // Create Downloads directory if it doesn't exist
+        NSFileManager *fileManager = [NSFileManager defaultManager];
+        BOOL isDirectory = NO;
+
+        if (![fileManager fileExistsAtPath:downloadsPath isDirectory:&isDirectory]) {
+            // Try to create Downloads directory
+            if (![fileManager createDirectoryAtPath:downloadsPath attributes:nil]) {
+                NSLog(@"Could not create Downloads directory, falling back to Documents");
+
+                // Fall back to Documents directory
+                downloadsPath = [homeDir stringByAppendingPathComponent:@"Documents"];
+
+                // If somehow Documents doesn't exist either, use Desktop
+                if (![fileManager fileExistsAtPath:downloadsPath isDirectory:&isDirectory]) {
+                    downloadsPath = [homeDir stringByAppendingPathComponent:@"Desktop"];
+                }
+            }
+        }
+
+        // Create full save path
+        NSString *savePath = [downloadsPath stringByAppendingPathComponent:_downloadFilename];
+
+        // If file already exists, append a number to the filename
+        int counter = 1;
+        NSString *baseFilename = [[_downloadFilename stringByDeletingPathExtension] retain];
+        NSString *extension = [[_downloadFilename pathExtension] retain];
+
+        while ([fileManager fileExistsAtPath:savePath]) {
+            NSString *newFilename;
+            if ([extension length] > 0) {
+                newFilename = [NSString stringWithFormat:@"%@ (%d).%@",
+                             baseFilename, counter, extension];
+            } else {
+                newFilename = [NSString stringWithFormat:@"%@ (%d)",
+                             baseFilename, counter];
+            }
+            savePath = [downloadsPath stringByAppendingPathComponent:newFilename];
+            counter++;
+        }
+
+        [baseFilename release];
+        [extension release];
+
+        // Save the file
+        if ([fileManager createFileAtPath:savePath contents:_downloadBuffer attributes:nil]) {
+            NSLog(@"File saved successfully to: %@", savePath);
+
+            // Notify the user where the file was saved
+            NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+                                savePath, @"path",
+                                _downloadFilename, @"filename",
+                                nil];
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"fileDownloaded"
+                                                              object:self
+                                                            userInfo:info];
+        } else {
+            NSLog(@"Error saving file to: %@", savePath);
+
+            // Notify about the error
+            NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+                                @"Could not save the downloaded file", @"error",
+                                _downloadFilename, @"filename",
+                                nil];
+
+            [[NSNotificationCenter defaultCenter] postNotificationName:@"fileDownloadError"
+                                                              object:self
+                                                            userInfo:info];
+        }
+
+        // Clean up
+        [_downloadBuffer setLength:0];
+        [_downloadFilename release];
+        _downloadFilename = nil;
+        NSLog(@"Download complete and buffer cleared");
+    }
 }
 
 - (void)ftpClientDidConnect:(id)client {
@@ -326,12 +429,16 @@ id findEntryWithFilename(NSArray *array, NSString *filename) {
         NSString *newPath = [self _pathForColumn:nextColumn];
         [self _loadDirectoryAtPath:newPath];
 	} else {
+		NSString *fullPath = [NSString stringWithFormat:@"%@/%@", path, selectedItem];
+		[_ftpClient downloadFile:fullPath];
+	/*
 		NSArray *entries = [_directoryCache objectForKey:path];
 		NSDictionary *entry = findEntryWithFilename(entries, selectedItem);
 
 		[[NSNotificationCenter defaultCenter] postNotificationName:@"fileClicked"
 															object:self
 														  userInfo:entry];
+	*/
 	}
 
 }
