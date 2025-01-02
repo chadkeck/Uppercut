@@ -425,7 +425,7 @@ unsigned long long _currentFileSize;
 
 			if (_expectedFileSize > 0) {
 				double progress = (double)_currentFileSize / (double)_expectedFileSize;
-				NSLog(@"progress %.2f%%", progress * 100);
+//				NSLog(@"FTP | download progress %.2f%%", progress * 100);
 				
 				if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didUpdateProgress:bytesReceived:forFile:)]) {
 					[_delegate ftpClient:self didUpdateProgress:progress bytesReceived:_currentFileSize forFile:_currentFile];

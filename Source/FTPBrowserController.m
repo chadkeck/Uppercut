@@ -196,10 +196,7 @@ NSString *_downloadFilename;
 }
 
 - (void)ftpClient:(id)client didUpdateProgress:(double)progress bytesReceived:(unsigned long long)bytesReceived forFile:(NSString *)filename {
-	NSLog(@"BROWSER | progress update debug:");
-	NSLog(@"  - current filename %@", _downloadFilename);
-	NSLog(@"  - progress param: %.2f%%", progress * 100.0);
-	NSLog(@"  - bytes received: %llu of %llu", bytesReceived, _currentFileSize);
+//	NSLog(@"BROWSER | didUpdateProgress | progress %.2f%% | forFile (%@):", progress * 100.0, filename);
 	
 	_downloadProgress = progress;
 
