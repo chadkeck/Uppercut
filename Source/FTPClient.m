@@ -15,6 +15,8 @@ typedef enum {
 - (void)_handleDataResponse:(NSString *)response;
 - (int)_parsePortNumber:(NSString *)portString;
 FTPTransferType _currentTransferType;
+unsigned long long _expectedFileSize;
+unsigned long long _currentFileSize;
 @end
 
 @implementation FTPClient
@@ -43,6 +45,9 @@ FTPTransferType _currentTransferType;
 		
 		// Store the current file being transferred 
 		_currentFile = nil;
+
+        _expectedFileSize = 0;
+        _currentFileSize = 0;
     }
     return self;
 }
@@ -204,13 +209,13 @@ FTPTransferType _currentTransferType;
     [_currentFile release];
     _currentFile = path;
 
-    _currentTransferType = FTPTransferTypeFile;
-    [self _setupDataConnection];
+    // Reset size tracking
+    _expectedFileSize = 0;
+    _currentFileSize = 0;
+    NSString *sizeCommand = [NSString stringWithFormat:@"SIZE %@", path];
+    [self _sendCommand:sizeCommand];
 
-    [self _sendCommand:@"TYPE I"];
-
-    NSString *retrCommand = [NSString stringWithFormat:@"RETR %@", path];
-    [self _sendCommand:retrCommand];
+    // The actual download will be initiated after we receive the SIZE response
 }
 
 #pragma mark - Private Methods
@@ -293,6 +298,36 @@ FTPTransferType _currentTransferType;
     int responseCode = [[response substringToIndex:3] intValue];
     
     switch (responseCode) {
+        case 213: { // File size response
+            // Skip past response code and space(s)
+            const char *sizeStr = [[response substringFromIndex:4] UTF8String];
+
+            // Parse size, checking for errors
+            char *endPtr = NULL;
+            unsigned long long size = strtoull(sizeStr, &endPtr, 10);
+
+            // Verify the parsing succeeded
+            if (endPtr != sizeStr && size != ULLONG_MAX) {
+                _expectedFileSize = size;
+                NSLog(@"FTP | File size is %llu bytes", _expectedFileSize);
+
+                if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveFileSize:forFile:)]) {
+                    [_delegate ftpClient:self didReceiveFileSize:_expectedFileSize forFile:_currentFile];
+                }
+
+                // Now start the actual download
+                _currentTransferType = FTPTransferTypeFile;
+                [self _setupDataConnection];
+                [self _sendCommand:@"TYPE I"];
+
+                NSString *retrCommand = [NSString stringWithFormat:@"RETR %@", _currentFile];
+                [self _sendCommand:retrCommand];
+            } else {
+                NSLog(@"FTP | Error parsing file size from response: %@", response);
+                // Handle error - could notify delegate here
+            }
+            break;
+		}
         case 220: // Service ready
             if (!_isAuthenticated && _username) {
                 [self authenticate];
@@ -353,7 +388,7 @@ FTPTransferType _currentTransferType;
             [_delegate ftpClient:self didReceiveDirectoryListing:entries];
         }
     }
-    // For file transfers, we don't convert to string - pass raw data to delegate
+	// For file transfers, we don't convert to string - pass raw data to delegate
 }
 
 #pragma mark - TCPClientDelegate methods
@@ -374,17 +409,33 @@ FTPTransferType _currentTransferType;
         [self _handleCommandResponse:response];
         [response release];
     } else if (client == _dataClient) {
-        NSLog(@"FTP | _dataClient got data of length: %d", [data length]);
+//        NSLog(@"FTP | _dataClient got data of length: %d", [data length]);
 
         if (_currentTransferType == FTPTransferTypeDirectory) {
             NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
             [self _handleDataResponse:response];
             [response release];
         } else {
-            // For file downloads, pass the raw data directly
-            if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
-                [_delegate ftpClient:self didReceiveData:data forFile:_currentFile];
-            }
+			// Update progress for file downloads
+			unsigned long long dataLength = (unsigned long long)[data length];
+			_currentFileSize += dataLength;
+			
+//			NSLog(@"_expectedFileSize %llu", _expectedFileSize);
+//			NSLog(@"_currentFileSize %llu", _currentFileSize);
+
+			if (_expectedFileSize > 0) {
+				double progress = (double)_currentFileSize / (double)_expectedFileSize;
+				NSLog(@"progress %.2f%%", progress * 100);
+				
+				if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didUpdateProgress:bytesReceived:forFile:)]) {
+					[_delegate ftpClient:self didUpdateProgress:progress bytesReceived:_currentFileSize forFile:_currentFile];
+				}
+			}
+
+			// Send the data to delegate
+			if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
+				[_delegate ftpClient:self didReceiveData:data forFile:_currentFile];
+			}
         }
     }
 }

@@ -163,10 +163,77 @@ NSString *_downloadFilename;
     return path;
 }
 
+- (void)ftpClient:(id)client didReceiveFileSize:(unsigned long long)size forFile:(NSString *)filename {
+	[_downloadFilename release];
+	_downloadFilename = [[filename lastPathComponent] retain];
+	
+    _currentFileSize = size;
+    _downloadProgress = 0.0;
+
+    // Format the size for display
+    NSString *sizeString;
+    if (size < 1024) {
+        sizeString = [NSString stringWithFormat:@"%llu bytes", size];
+    } else if (size < 1024 * 1024) {
+        sizeString = [NSString stringWithFormat:@"%.1f KB", size / 1024.0];
+    } else {
+        sizeString = [NSString stringWithFormat:@"%.1f MB", size / (1024.0 * 1024.0)];
+    }
+
+    // Update the interface to show the starting download
+//    NSString *filename = [_downloadFilename lastPathComponent];
+    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+        _downloadFilename, @"filename",
+        sizeString, @"size",
+        [NSNumber numberWithFloat:0.0], @"progress",
+        nil];
+
+    NSLog(@"BROWSER | didReceiveFileSize info (%@)", info);
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadProgress"
+                                                      object:self
+                                                    userInfo:info];
+}
+
+- (void)ftpClient:(id)client didUpdateProgress:(double)progress bytesReceived:(unsigned long long)bytesReceived forFile:(NSString *)filename {
+	NSLog(@"BROWSER | progress update debug:");
+	NSLog(@"  - current filename %@", _downloadFilename);
+	NSLog(@"  - progress param: %.2f%%", progress * 100.0);
+	NSLog(@"  - bytes received: %llu of %llu", bytesReceived, _currentFileSize);
+	
+	_downloadProgress = progress;
+
+    // Calculate the amount downloaded
+    NSString *progressString;
+
+    if (bytesReceived < 1024ULL) {
+        progressString = [NSString stringWithFormat:@"%llu bytes", bytesReceived];
+    } else if (bytesReceived < 1024ULL * 1024ULL) {
+		double kb = (double)bytesReceived / 1024.0;
+        progressString = [NSString stringWithFormat:@"%.1f KB", kb];
+    } else {
+		double mb = (double)bytesReceived / (1024.0 * 1024.0);
+        progressString = [NSString stringWithFormat:@"%.1f MB", mb];
+    }
+
+    // Update the interface with progress
+    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+        [_downloadFilename lastPathComponent], @"filename",
+        progressString, @"downloaded",
+        [NSNumber numberWithFloat:progress], @"progress",
+        nil];
+
+    NSLog(@"BROWSER | didUpdateProgress | progressString %@, info (%@)", progressString, info);
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadProgress"
+                                                      object:self
+                                                    userInfo:info];
+}
+
 - (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
     if (!filename) return;
 
-    // Store filename if this is the start of a download
+    // Only set filename if not already set
     if (!_downloadFilename) {
         [_downloadFilename release];
         _downloadFilename = [[filename lastPathComponent] retain];
@@ -176,7 +243,7 @@ NSString *_downloadFilename;
 
     // Append the data to our buffer
     [_downloadBuffer appendData:data];
-    NSLog(@"Received %d bytes of data", [data length]);
+//    NSLog(@"Received %d bytes of data", [data length]);
 
     // Check if this is the end of the transfer (data length of 0)
     if ([data length] == 0) {
