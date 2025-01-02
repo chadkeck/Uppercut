@@ -23,6 +23,15 @@
 	[[Logger sharedInstance] log:@"Uppercut started"];
 }
 
+- (IBAction)onToggleDrawer:(id)sender {
+	NSLog(@"CONTROLLER | toggleDrawer");
+    if ([_drawer state] == NSDrawerOpenState || [_drawer state] == NSDrawerOpeningState) {
+        [_drawer close];
+    } else {
+        [_drawer open];
+    }
+}
+
 - (void)handleConnectionUpdate:(NSNotification *)notification {
 	NSDictionary *connectionInfo = [notification userInfo];
 	NSLog(@"CONTROLLER | Received 'connectionUpdate' with %@", connectionInfo);
