@@ -60,7 +60,9 @@ NSString *_downloadFilename;
     [_browser setAllowsMultipleSelection:NO];
     [_browser setAllowsEmptySelection:NO];
     [_browser setHasHorizontalScroller:YES];
-    
+
+    [_browser setDoubleAction:@selector(handleDoubleClick:)];
+
     // Load initial directory
     [self refresh];
 }
@@ -406,6 +408,30 @@ id findEntryWithFilename(NSArray *array, NSString *filename) {
 	return nil;
 }
 
+- (void)handleDoubleClick:(id)sender {
+    NSLog(@"BROWSER | handleDoubleClick");
+
+    NSString *path = [self _pathForColumn:[_browser selectedColumn]];
+    NSString *selectedItem = [[_browser selectedCell] stringValue];
+
+    if (selectedItem && [selectedItem isEqualToString:@"Loading..."]) return;
+
+    // Only handle file downloads on double-click
+    if ([[_browser selectedCell] isLeaf]) {
+        NSString *fullPath = [NSString stringWithFormat:@"%@/%@", path, selectedItem];
+        [_ftpClient downloadFile:fullPath];
+
+/*
+		NSArray *entries = [_directoryCache objectForKey:path];
+		NSDictionary *entry = findEntryWithFilename(entries, selectedItem);
+
+		[[NSNotificationCenter defaultCenter] postNotificationName:@"fileClicked"
+															object:self
+														  userInfo:entry];
+*/
+    }
+}
+
 - (void)browserSelectionDidChange:(id)sender {
     NSString *path = [self _pathForColumn:[_browser selectedColumn]];
     NSString *selectedItem = [[_browser selectedCell] stringValue];
@@ -428,19 +454,7 @@ id findEntryWithFilename(NSArray *array, NSString *filename) {
     if (![[_browser selectedCell] isLeaf]) {
         NSString *newPath = [self _pathForColumn:nextColumn];
         [self _loadDirectoryAtPath:newPath];
-	} else {
-		NSString *fullPath = [NSString stringWithFormat:@"%@/%@", path, selectedItem];
-		[_ftpClient downloadFile:fullPath];
-	/*
-		NSArray *entries = [_directoryCache objectForKey:path];
-		NSDictionary *entry = findEntryWithFilename(entries, selectedItem);
-
-		[[NSNotificationCenter defaultCenter] postNotificationName:@"fileClicked"
-															object:self
-														  userInfo:entry];
-	*/
 	}
-
 }
 
 #pragma mark - FTPClientDelegate Methods
