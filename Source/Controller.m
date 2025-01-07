@@ -19,6 +19,17 @@
 												name:@"connectionUpdate"
 											  object:nil];
 	
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											selector:@selector(handleDownloadProgress:)
+												name:@"downloadProgress"
+											  object:nil];
+						
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(handleDownloadSucceeded:)
+												 name:@"fileDownloaded"
+											   object:nil];
+											  
+	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
 }
@@ -38,6 +49,18 @@
 	NSNumber *numState = [connectionInfo objectForKey:@"state"];
 	NetworkStatusState state = [numState intValue];
 	[networkStatusController setConnectionState:state];
+}
+
+- (void)handleDownloadProgress:(NSNotification *)notification {
+	NSDictionary *downloadInfo = [notification userInfo];
+//	NSLog(@"CONTROLLER | Received 'downloadProgress' with %@", downloadInfo);
+	[downloadViewController updateDownloadState:downloadInfo];
+}
+
+- (void)handleDownloadSucceeded:(NSNotification *)notification {
+	NSDictionary *downloadInfo = [notification userInfo];
+	NSLog(@"CONTROLLER | Received 'fileDownloaded' with %@", downloadInfo);
+	[downloadViewController reset];
 }
 
 - (void)handleFileClicked:(NSNotification *)notification {

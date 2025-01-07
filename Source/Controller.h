@@ -6,11 +6,13 @@
 #import "FTPBrowserController.h"
 #import "NetworkStatusEnum.h"
 #import "NetworkStatusController.h"
+#import "DownloadViewController.h"
 
 @interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
 	IBOutlet NSButton *connectButton;
 	
 	IBOutlet NetworkStatusController *networkStatusController;
+	IBOutlet DownloadViewController *downloadViewController;
 	IBOutlet NSDrawer *_drawer;
 	IRCClient *_ircClient;
 	FTPClient *_ftpClient;

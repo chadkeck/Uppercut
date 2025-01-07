@@ -220,7 +220,7 @@ NSString *_downloadFilename;
         [NSNumber numberWithFloat:progress], @"progress",
         nil];
 
-    NSLog(@"BROWSER | didUpdateProgress | progressString %@, info (%@)", progressString, info);
+    //NSLog(@"BROWSER | didUpdateProgress | progressString %@, info (%@)", progressString, info);
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadProgress"
                                                       object:self

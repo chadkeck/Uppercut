@@ -8,8 +8,15 @@
                 "_browser" = FTPBrowserController; 
                 "_drawer" = NSDrawer; 
                 connectButton = NSButton; 
+                downloadViewController = DownloadViewController; 
                 networkStatusController = NetworkStatusController; 
             }; 
+            SUPERCLASS = NSObject; 
+        }, 
+        {
+            CLASS = DownloadViewController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {"_filenameText" = NSTextField; "_progressBar" = NSProgressIndicator; }; 
             SUPERCLASS = NSObject; 
         }, 
         {
