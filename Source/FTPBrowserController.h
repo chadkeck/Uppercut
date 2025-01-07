@@ -4,6 +4,8 @@
 @interface FTPBrowserController : NSObject <FTPClientDelegate> {
     IBOutlet NSBrowser *_browser;
     FTPClient *_ftpClient;
+	
+	NSString *_downloadDirectory;
 
     // Cache for directory listings
     NSMutableDictionary *_directoryCache;
@@ -24,6 +26,7 @@
 // Public methods
 - (void)setFTPClient:(FTPClient *)client;
 - (void)refresh;
+- (void)setDownloadDirectory:(NSString *)directory;
 
 // Actions
 - (IBAction)browserSelectionDidChange:(id)sender;

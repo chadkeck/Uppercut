@@ -88,6 +88,15 @@ NSString *_downloadFilename;
     [_browser loadColumnZero];
 }
 
+- (void)setDownloadDirectory:(NSString *)directory {
+	if (_downloadDirectory != directory) {
+		[directory retain];
+		[_downloadDirectory release];
+		_downloadDirectory = directory;
+	}
+	
+}
+
 #pragma mark - Private Methods
 
 - (void)_loadDirectoryAtPath:(NSString *)path {
@@ -244,33 +253,19 @@ NSString *_downloadFilename;
 
     // Check if this is the end of the transfer (data length of 0)
     if ([data length] == 0) {
-        // Get user's home directory
-        NSString *homeDir = NSHomeDirectory();
-
-        // Construct path to Downloads folder
-        NSString *downloadsPath = [homeDir stringByAppendingPathComponent:@"Downloads"];
-
-        // Create Downloads directory if it doesn't exist
         NSFileManager *fileManager = [NSFileManager defaultManager];
         BOOL isDirectory = NO;
+		
+		NSLog(@"BROWSER | _downloadDirectory: (%@)", _downloadDirectory);
 
-        if (![fileManager fileExistsAtPath:downloadsPath isDirectory:&isDirectory]) {
-            // Try to create Downloads directory
-            if (![fileManager createDirectoryAtPath:downloadsPath attributes:nil]) {
-                NSLog(@"Could not create Downloads directory, falling back to Documents");
-
-                // Fall back to Documents directory
-                downloadsPath = [homeDir stringByAppendingPathComponent:@"Documents"];
-
-                // If somehow Documents doesn't exist either, use Desktop
-                if (![fileManager fileExistsAtPath:downloadsPath isDirectory:&isDirectory]) {
-                    downloadsPath = [homeDir stringByAppendingPathComponent:@"Desktop"];
-                }
-            }
+        if (![fileManager fileExistsAtPath:_downloadDirectory isDirectory:&isDirectory]) {
+			NSLog(@"ERROR: Can't download to (%@)", _downloadDirectory);
+			return;
         }
 
         // Create full save path
-        NSString *savePath = [downloadsPath stringByAppendingPathComponent:_downloadFilename];
+        NSString *savePath = [_downloadDirectory stringByAppendingPathComponent:_downloadFilename];
+		NSLog(@"BROWSER | savePath: (%@)", savePath);
 
         // If file already exists, append a number to the filename
         int counter = 1;
@@ -286,7 +281,7 @@ NSString *_downloadFilename;
                 newFilename = [NSString stringWithFormat:@"%@ (%d)",
                              baseFilename, counter];
             }
-            savePath = [downloadsPath stringByAppendingPathComponent:newFilename];
+            savePath = [_downloadDirectory stringByAppendingPathComponent:newFilename];
             counter++;
         }
 

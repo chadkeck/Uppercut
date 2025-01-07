@@ -9,6 +9,11 @@
 	
 	_ftpClient = nil;
 	
+	// default downloads to user's "Downloads" directory
+	NSString *homeDirectory = NSHomeDirectory();
+	NSString *downloadsPath = [homeDirectory stringByAppendingPathComponent:@"Downloads"];
+	[self _setDownloadDirectory:downloadsPath];
+	
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(handleFileClicked:)
 												 name:@"fileClicked"
@@ -28,7 +33,6 @@
 											 selector:@selector(handleDownloadSucceeded:)
 												 name:@"fileDownloaded"
 											   object:nil];
-											  
 	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
@@ -94,6 +98,31 @@
 	NSLog(@"CONTROLLER | didReceiveCredentials | _browser %@", _browser);
 	
 	[_browser setFTPClient:_ftpClient];
+}
+
+- (IBAction)onClickSaveTo:(id)sender {
+	NSLog(@"onClickSaveTo");
+	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+	[openPanel setCanChooseDirectories:YES];
+	[openPanel setCanChooseFiles:NO];
+	[openPanel setAllowsMultipleSelection:NO];
+	[openPanel setPrompt:@"Select Directory"];
+	
+	int result = [openPanel runModal];
+	if (result == NSOKButton) {
+		NSURL *url = [openPanel URL];
+		[self _setDownloadDirectory:[url path]];
+	}
+}
+
+- (void)_setDownloadDirectory:(NSString *)directory {
+	NSString *directoryName = [directory lastPathComponent];
+	NSLog(@"Selected directory: %@ | directoryName: %@", directory, directoryName);
+
+	// TODO: check if directory is writable?
+
+	[downloadDirectoryTextField setStringValue:directoryName];
+	[_browser setDownloadDirectory:directory];
 }
 
 - (IBAction)onClickConnect:(id)sender {

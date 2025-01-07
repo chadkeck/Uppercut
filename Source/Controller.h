@@ -9,8 +9,8 @@
 #import "DownloadViewController.h"
 
 @interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
-	IBOutlet NSButton *connectButton;
-	
+	IBOutlet NSTextField *downloadDirectoryTextField;
+
 	IBOutlet NetworkStatusController *networkStatusController;
 	IBOutlet DownloadViewController *downloadViewController;
 	IBOutlet NSDrawer *_drawer;
@@ -21,9 +21,13 @@
 
 #pragma mark - UI Actions
 - (IBAction)onClickConnect:(id)sender;
+- (IBAction)onClickSaveTo:(id)sender;
 - (IBAction)onToggleDrawer:(id)sender;
 
 #pragma mark - IRCClientDelegate
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
+
+#pragma mark - private
+- (void)_setDownloadDirectory:(NSString *)directory;
 
 @end
