@@ -1,17 +1,11 @@
 {
     IBClasses = (
         {
-            ACTIONS = {
-                onClickCancelDownload = id; 
-                onClickConnect = id; 
-                onClickSaveTo = id; 
-                onToggleDrawer = id; 
-            }; 
+            ACTIONS = {onClickCancelDownload = id; onClickConnect = id; onClickSaveTo = id; }; 
             CLASS = Controller; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 "_browser" = FTPBrowserController; 
-                "_drawer" = NSDrawer; 
                 cancelDownloadButton = NSButton; 
                 downloadDirectoryTextField = NSTextField; 
                 downloadViewController = DownloadViewController; 

@@ -50,15 +50,6 @@
 	[[Logger sharedInstance] log:@"Uppercut started"];
 }
 
-- (IBAction)onToggleDrawer:(id)sender {
-	NSLog(@"CONTROLLER | toggleDrawer");
-    if ([_drawer state] == NSDrawerOpenState || [_drawer state] == NSDrawerOpeningState) {
-        [_drawer close];
-    } else {
-        [_drawer open];
-    }
-}
-
 - (IBAction)onClickCancelDownload:(id)sender {
 	NSLog(@"CONTROLLER | cancel download clicked");
 	[_browser cancelCurrentDownload];
