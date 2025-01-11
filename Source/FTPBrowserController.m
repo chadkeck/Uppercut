@@ -7,6 +7,8 @@
 - (NSString *)_pathForColumn:(int)column;
 NSMutableData *_downloadBuffer;
 NSString *_downloadFilename;
+NSString *_downloadPath;
+NSFileHandle *_downloadFileHandle;
 @end
 
 @implementation FTPBrowserController
@@ -19,6 +21,19 @@ NSString *_downloadFilename;
     NSLog(@"Current path components: %@", _currentPath);
     NSLog(@"Cache keys: %@", [_directoryCache allKeys]);
     NSLog(@"--------------------");
+}
+
+- (void)_cleanupDownload {
+    if (_downloadFileHandle != nil) {
+        [_downloadFileHandle closeFile];
+        [_downloadFileHandle release];
+        _downloadFileHandle = nil;
+    }
+
+    [_downloadPath release];
+    _downloadPath = nil;
+    [_downloadFilename release];
+    _downloadFilename = nil;
 }
 
 - (id)init {
@@ -39,14 +54,14 @@ NSString *_downloadFilename;
 }
 
 - (void)dealloc {
-	NSLog(@"BROWSER | dealloc");
-    // Release retained objects
+    NSLog(@"BROWSER | dealloc");
+    [self _cleanupDownload];
+
     [_ftpClient release];
     [_directoryCache release];
     [_currentPath release];
-	[_browser release];
+    [_browser release];
     [_downloadBuffer release];
-    [_downloadFilename release];
 
     [super dealloc];
 }
@@ -173,13 +188,51 @@ NSString *_downloadFilename;
 }
 
 - (void)ftpClient:(id)client didReceiveFileSize:(unsigned long long)size forFile:(NSString *)filename {
-	[_downloadFilename release];
-	_downloadFilename = [[filename lastPathComponent] retain];
-	
+	_bytesReceived = 0;
+	_currentFileSize = size;
+	_downloadProgress = 0.0;
+
+    [_downloadFilename release];
+    _downloadFilename = [[filename lastPathComponent] retain];
+
     _currentFileSize = size;
     _downloadProgress = 0.0;
 
-    // Format the size for display
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSString *basePath = [_downloadDirectory stringByAppendingPathComponent:_downloadFilename];
+    _downloadPath = [basePath retain];
+
+    // Handle existing files by appending number
+    int counter = 1;
+    while ([fileManager fileExistsAtPath:_downloadPath]) {
+        NSString *newName = [NSString stringWithFormat:@"%@_%d%@",
+            [[_downloadFilename stringByDeletingPathExtension] retain],
+            counter,
+            [[_downloadFilename pathExtension] length] > 0 ?
+                [NSString stringWithFormat:@".%@", [_downloadFilename pathExtension]] : @""];
+        [_downloadPath release];
+        _downloadPath = [[_downloadDirectory stringByAppendingPathComponent:newName] retain];
+        counter++;
+    }
+
+    NSLog(@"FTP | Creating file at path: %@", _downloadPath);
+
+    // Create empty file
+    if (![fileManager createFileAtPath:_downloadPath contents:[NSData data] attributes:nil]) {
+        NSLog(@"ERROR: Failed to create file at %@", _downloadPath);
+        [self _cleanupDownload];
+        return;
+    }
+
+    // Open file handle for writing
+    _downloadFileHandle = [[NSFileHandle fileHandleForWritingAtPath:_downloadPath] retain];
+    if (!_downloadFileHandle) {
+        NSLog(@"ERROR: Could not open file handle for writing at %@", _downloadPath);
+        [self _cleanupDownload];
+        return;
+    }
+
+    // Format size for display
     NSString *sizeString;
     if (size < 1024) {
         sizeString = [NSString stringWithFormat:@"%llu bytes", size];
@@ -189,18 +242,15 @@ NSString *_downloadFilename;
         sizeString = [NSString stringWithFormat:@"%.1f MB", size / (1024.0 * 1024.0)];
     }
 
-    // Update the interface to show the starting download
-//    NSString *filename = [_downloadFilename lastPathComponent];
+    // Update the interface
     NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
         _downloadFilename, @"filename",
         sizeString, @"size",
         [NSNumber numberWithFloat:0.0], @"progress",
         nil];
 
-    NSLog(@"BROWSER | didReceiveFileSize info (%@)", info);
-
     [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadProgress"
-                                                      object:self
+                                                    object:self
                                                     userInfo:info];
 }
 
@@ -237,90 +287,54 @@ NSString *_downloadFilename;
 }
 
 - (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
-    if (!filename) return;
-
-    // Only set filename if not already set
-    if (!_downloadFilename) {
-        [_downloadFilename release];
-        _downloadFilename = [[filename lastPathComponent] retain];
-        [_downloadBuffer setLength:0];
-        NSLog(@"Starting download of file: %@", _downloadFilename);
+    if (!filename || !_downloadFileHandle) {
+        return;
     }
 
-    // Append the data to our buffer
-    [_downloadBuffer appendData:data];
-//    NSLog(@"Received %d bytes of data", [data length]);
-
-    // Check if this is the end of the transfer (data length of 0)
-    if ([data length] == 0) {
-        NSFileManager *fileManager = [NSFileManager defaultManager];
-        BOOL isDirectory = NO;
+    // Write data chunk to file
+    NS_DURING
+        [_downloadFileHandle writeData:data];
 		
-		NSLog(@"BROWSER | _downloadDirectory: (%@)", _downloadDirectory);
+		// Update progress
+		_bytesReceived += [data length];
+		if (_currentFileSize > 0) {
+			_downloadProgress = (double)_bytesReceived / (double)_currentFileSize;
+		}
 
-        if (![fileManager fileExistsAtPath:_downloadDirectory isDirectory:&isDirectory]) {
-			NSLog(@"ERROR: Can't download to (%@)", _downloadDirectory);
-			return;
-        }
+        // Check if this is the end of transfer (data length 0)
+        if ([data length] == 0) {
+            // Close file handle and notify success
+            [_downloadFileHandle closeFile];
+            [_downloadFileHandle release];
+            _downloadFileHandle = nil;
 
-        // Create full save path
-        NSString *savePath = [_downloadDirectory stringByAppendingPathComponent:_downloadFilename];
-		NSLog(@"BROWSER | savePath: (%@)", savePath);
-
-        // If file already exists, append a number to the filename
-        int counter = 1;
-        NSString *baseFilename = [[_downloadFilename stringByDeletingPathExtension] retain];
-        NSString *extension = [[_downloadFilename pathExtension] retain];
-
-        while ([fileManager fileExistsAtPath:savePath]) {
-            NSString *newFilename;
-            if ([extension length] > 0) {
-                newFilename = [NSString stringWithFormat:@"%@ (%d).%@",
-                             baseFilename, counter, extension];
-            } else {
-                newFilename = [NSString stringWithFormat:@"%@ (%d)",
-                             baseFilename, counter];
-            }
-            savePath = [_downloadDirectory stringByAppendingPathComponent:newFilename];
-            counter++;
-        }
-
-        [baseFilename release];
-        [extension release];
-
-        // Save the file
-        if ([fileManager createFileAtPath:savePath contents:_downloadBuffer attributes:nil]) {
-            NSLog(@"File saved successfully to: %@", savePath);
-
-            // Notify the user where the file was saved
             NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
-                                savePath, @"path",
-                                _downloadFilename, @"filename",
-                                nil];
+                _downloadPath, @"path",
+                _downloadFilename, @"filename",
+                nil];
 
             [[NSNotificationCenter defaultCenter] postNotificationName:@"fileDownloaded"
-                                                              object:self
+                                                            object:self
                                                             userInfo:info];
-        } else {
-            NSLog(@"Error saving file to: %@", savePath);
 
-            // Notify about the error
-            NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
-                                @"Could not save the downloaded file", @"error",
-                                _downloadFilename, @"filename",
-                                nil];
-
-            [[NSNotificationCenter defaultCenter] postNotificationName:@"fileDownloadError"
-                                                              object:self
-                                                            userInfo:info];
+            [self _cleanupDownload];
+            NSLog(@"Download complete");
         }
+    NS_HANDLER
+        NSLog(@"Error writing to file: %@", [localException reason]);
 
-        // Clean up
-        [_downloadBuffer setLength:0];
-        [_downloadFilename release];
-        _downloadFilename = nil;
-        NSLog(@"Download complete and buffer cleared");
-    }
+        // Clean up and notify error
+        [self _cleanupDownload];
+
+        NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+            [NSString stringWithFormat:@"Error writing file: %@", [localException reason]], @"error",
+            _downloadFilename, @"filename",
+            nil];
+
+        [[NSNotificationCenter defaultCenter] postNotificationName:@"fileDownloadError"
+                                                        object:self
+                                                        userInfo:info];
+    NS_ENDHANDLER
 }
 
 - (void)ftpClientDidConnect:(id)client {

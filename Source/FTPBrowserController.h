@@ -18,6 +18,7 @@
 	
 	float _downloadProgress;
 	unsigned long long _currentFileSize;
+	unsigned long long _bytesReceived;
 }
 
 - (id)init;
