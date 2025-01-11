@@ -92,6 +92,7 @@
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_browser release];
+    [_openPanel release];
 	[super dealloc];
 }
 
@@ -115,18 +116,44 @@
 }
 
 - (IBAction)onClickSaveTo:(id)sender {
-	NSLog(@"onClickSaveTo");
-	NSOpenPanel *openPanel = [NSOpenPanel openPanel];
-	[openPanel setCanChooseDirectories:YES];
-	[openPanel setCanChooseFiles:NO];
-	[openPanel setAllowsMultipleSelection:NO];
-	[openPanel setPrompt:@"Select Directory"];
-	
-	int result = [openPanel runModal];
-	if (result == NSOKButton) {
-		NSURL *url = [openPanel URL];
-		[self _setDownloadDirectory:[url path]];
-	}
+    NSLog(@"CONTROLLER | onClickSaveTo: Opening directory selection sheet");
+
+    // Create and configure the open panel
+    _openPanel = [[NSOpenPanel openPanel] retain];
+    [_openPanel setCanChooseDirectories:YES];
+    [_openPanel setCanChooseFiles:NO];
+    [_openPanel setAllowsMultipleSelection:NO];
+    [_openPanel setPrompt:@"Select Directory"];
+
+    // Begin the sheet attached to our window
+    // First find our window through any of our outlets
+    NSWindow *window = [downloadDirectoryTextField window];
+
+    NSLog(@"CONTROLLER | onClickSaveTo: Beginning sheet for window %@", window);
+
+    // Note: In 10.4, we use beginSheetForDirectory:file:types:modalForWindow:modalDelegate:
+    // didEndSelector:contextInfo: instead of the newer beginSheetModalForWindow: methods
+    [_openPanel beginSheetForDirectory:nil
+                                file:nil
+                               types:nil
+                      modalForWindow:window
+                       modalDelegate:self
+                      didEndSelector:@selector(_openPanelDidEnd:returnCode:contextInfo:)
+                         contextInfo:NULL];
+}
+
+- (void)_openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo {
+    NSLog(@"CONTROLLER | _openPanelDidEnd: Panel closed with return code %d", returnCode);
+
+    if (returnCode == NSOKButton) {
+        // Get the selected directory path
+        NSString *selectedPath = [[sheet filenames] objectAtIndex:0];
+        [self _setDownloadDirectory:selectedPath];
+    }
+
+    // Clean up by releasing the panel
+    [_openPanel release];
+    _openPanel = nil;
 }
 
 - (void)_setDownloadDirectory:(NSString *)directory {

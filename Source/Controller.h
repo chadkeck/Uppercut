@@ -17,6 +17,7 @@
 	IRCClient *_ircClient;
 	FTPClient *_ftpClient;
 	IBOutlet FTPBrowserController *_browser;
+    NSPanel *_openPanel;
 }
 
 #pragma mark - UI Actions
@@ -29,5 +30,7 @@
 
 #pragma mark - private
 - (void)_setDownloadDirectory:(NSString *)directory;
+- (void)_openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
+
 
 @end
