@@ -20,6 +20,7 @@ typedef enum {
 
     BOOL _isConnected;
     BOOL _isAuthenticated;
+	BOOL _isCancelled;
     FTPTransferMode _transferMode;
 
     // For parsing responses
@@ -47,6 +48,7 @@ typedef enum {
 - (BOOL)connect;
 - (void)disconnect;
 - (BOOL)isConnected;
+- (void)cancelCurrentTransfer;
 
 // FTP Commands
 - (void)authenticate;
@@ -54,6 +56,7 @@ typedef enum {
 - (void)changeDirectory:(NSString *)path;
 - (void)downloadFile:(NSString *)path;
 - (void)uploadFile:(NSString *)path withData:(NSData *)data;
+- (void)abortTransfer;
 
 // Delegate
 - (void)setDelegate:(id<FTPClientDelegate>)delegate;

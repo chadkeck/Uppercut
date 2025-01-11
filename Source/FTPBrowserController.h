@@ -24,6 +24,7 @@
 - (void)setFTPClient:(FTPClient *)client;
 - (void)refresh;
 - (void)setDownloadDirectory:(NSString *)directory;
+- (void)cancelCurrentDownload;
 
 // Actions
 - (IBAction)browserSelectionDidChange:(id)sender;

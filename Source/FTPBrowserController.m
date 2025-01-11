@@ -42,19 +42,6 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     NS_ENDHANDLER
 }
 
-- (void)_cleanupDownload {
-    if (_downloadFileHandle != nil) {
-        [_downloadFileHandle closeFile];
-        [_downloadFileHandle release];
-        _downloadFileHandle = nil;
-    }
-
-    [_downloadPath release];
-    _downloadPath = nil;
-    [_downloadFilename release];
-    _downloadFilename = nil;
-}
-
 - (id)init {
 	NSLog(@"BROWSER | init");
     self = [super init];
@@ -129,6 +116,48 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
 		_downloadDirectory = directory;
 	}
 	
+}
+
+- (void)cancelCurrentDownload {
+	NSLog(@"BROWSER | cancelling current download");
+	
+	// cancel the FTP transfer
+	[_ftpClient abortTransfer];
+	
+    // We'll clean up the download when we receive the abort confirmation
+}
+
+- (void)_cleanupDownload {
+    NS_DURING
+        if (_downloadFileHandle != nil) {
+            // Sync any remaining data
+            [self _syncFileHandle];
+
+            // Close file handle
+            [_downloadFileHandle closeFile];
+            [_downloadFileHandle release];
+            _downloadFileHandle = nil;
+
+            // If download was cancelled, delete partial file
+            if (_downloadPath) {
+                NSFileManager *fileManager = [NSFileManager defaultManager];
+                [fileManager removeFileAtPath:_downloadPath handler:nil];
+            }
+        }
+
+        [_downloadPath release];
+        _downloadPath = nil;
+        [_downloadFilename release];
+        _downloadFilename = nil;
+
+        _downloadProgress = 0.0;
+        _currentFileSize = 0;
+        _bytesReceived = 0;
+        _writeCount = 0;
+        _lastSyncBytes = 0;
+    NS_HANDLER
+        NSLog(@"Error cleaning up download: %@", [localException reason]);
+    NS_ENDHANDLER
 }
 
 #pragma mark - Private Methods
@@ -259,9 +288,19 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     } else {
         sizeString = [NSString stringWithFormat:@"%.1f MB", size / (1024.0 * 1024.0)];
     }
+	
+	// Notify the download is starting
+    NSDictionary *startInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+        _downloadFilename, @"filename",
+        sizeString, @"size",
+        nil];
 
-    // Update the interface
-    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadStarted"
+                                                    object:self
+                                                    userInfo:startInfo];
+
+    // Then send initial progress update
+    NSDictionary *progressInfo = [NSDictionary dictionaryWithObjectsAndKeys:
         _downloadFilename, @"filename",
         sizeString, @"size",
         [NSNumber numberWithFloat:0.0], @"progress",
@@ -269,7 +308,7 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
 
     [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadProgress"
                                                     object:self
-                                                    userInfo:info];
+                                                    userInfo:progressInfo];
 }
 
 - (void)ftpClient:(id)client didUpdateProgress:(double)progress bytesReceived:(unsigned long long)bytesReceived forFile:(NSString *)filename {
@@ -385,9 +424,27 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
 													object:self
 												  userInfo:connectionInfo];
 }
+
 - (void)ftpClientDidAuthenticate:(id)client {
 	NSLog(@"BROWSER | ftpClientDidAuthenticate");
 	[_ftpClient listDirectory:@""];
+}
+
+- (void)ftpClientDidAbortTransfer:(id)client {
+    NSLog(@"BROWSER | FTP transfer aborted by server");
+
+    // Now we can safely clean up
+    [self _cleanupDownload];
+
+    // Notify UI that download was cancelled
+    NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+        @"Download cancelled", @"status",
+        _downloadFilename, @"filename",
+        nil];
+
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"downloadCancelled"
+                                                      object:self
+                                                    userInfo:info];
 }
 
 #pragma mark - NSBrowser Delegate Methods

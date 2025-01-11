@@ -10,6 +10,7 @@
 
 @interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
 	IBOutlet NSTextField *downloadDirectoryTextField;
+	IBOutlet NSButton *cancelDownloadButton;
 
 	IBOutlet NetworkStatusController *networkStatusController;
 	IBOutlet DownloadViewController *downloadViewController;
@@ -23,6 +24,7 @@
 - (IBAction)onClickConnect:(id)sender;
 - (IBAction)onClickSaveTo:(id)sender;
 - (IBAction)onToggleDrawer:(id)sender;
+- (IBAction)onClickCancelDownload:(id)sender;
 
 #pragma mark - IRCClientDelegate
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;

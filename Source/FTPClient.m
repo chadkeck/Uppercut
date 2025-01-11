@@ -34,6 +34,7 @@ unsigned long long _currentFileSize;
 		
         _isConnected = NO;
         _isAuthenticated = NO;
+		_isCancelled = NO;
         _transferMode = FTPTransferModePassive;
 		
         _responseBuffer = [[NSMutableString alloc] init];
@@ -135,6 +136,19 @@ unsigned long long _currentFileSize;
     _isAuthenticated = NO;
 }
 
+- (void)cancelCurrentTransfer {
+	NSLog(@"FTP | cancelling current transfer");
+	_isCancelled = YES;
+	
+	// close the data connection
+	[_dataClient disconnect];
+	
+	// clean up state
+	_currentFile = nil;
+	_expectedFileSize = 0;
+	_currentFileSize = 0;
+}
+
 #pragma mark - FTP Commands
 
 - (void)authenticate {
@@ -199,6 +213,8 @@ unsigned long long _currentFileSize;
 
 - (void)downloadFile:(NSString *)path {
     NSLog(@"FTP | downloadFile(%@)", path);
+	
+	_isCancelled = NO;
 
     if (!_isAuthenticated) {
         NSLog(@"FTP | WARNING | downloadFile called when not authenticated");
@@ -287,6 +303,24 @@ unsigned long long _currentFileSize;
 	}
 }
 
+- (void)abortTransfer {
+    NSLog(@"FTP | Sending ABOR command to terminate transfer");
+
+    _isCancelled = YES;
+
+    // Send the ABOR command on the command channel
+    [self _sendCommand:@"ABOR"];
+
+    // The data connection will be closed by the server, but we can close our end too
+    [_dataClient disconnect];
+
+    // Clean up state
+    [_currentFile release];
+    _currentFile = nil;
+    _expectedFileSize = 0;
+    _currentFileSize = 0;
+}
+
 - (void)_handleCommandResponse:(NSString *)response {
 	NSLog(@"FTP | _handleCommandResponse %@", response);
     // Parse response code
@@ -333,10 +367,19 @@ unsigned long long _currentFileSize;
                 [self authenticate];
             }
             break;
-			
-		case 226: // Directory send OK
-			// TODO: might have to use this when an empty directory is navigated to since the data client doesn't seem to get any data
-			break;
+
+		case 225: // Data connection open; no transfer in progress
+            if (_isCancelled) {
+                _isCancelled = NO;
+                [self _notifyAbortComplete];
+            }
+
+		case 226: // Closing data connection, transfer aborted
+            if (_isCancelled) {
+                _isCancelled = NO;
+                [self _notifyAbortComplete];
+            }
+            break;
 			
         case 227:
             // Entering passive mode
@@ -361,6 +404,11 @@ unsigned long long _currentFileSize;
 		case 421: // Timeout
 			[self disconnect];
 			break;
+		case 426: // Connection closed; transfer aborted
+            if (_isCancelled) {
+                NSLog(@"FTP | data connection closed after abort");
+            }
+			break;
 			
 		case 530: // Permission denied
 			[self disconnect];
@@ -370,6 +418,13 @@ unsigned long long _currentFileSize;
 			NSLog(@"FTP | default case hit");
 			break;
 	}
+}
+
+- (void)_notifyAbortComplete {
+    NSLog(@"FTP | Abort sequence complete");
+    if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidAbortTransfer:)]) {
+        [_delegate ftpClientDidAbortTransfer:self];
+    }
 }
 
 - (void)_handleDataResponse:(NSString *)response {
@@ -404,6 +459,11 @@ unsigned long long _currentFileSize;
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
+	if (_isCancelled) {
+		//NSLog(@"FTP | transfer cancelled - ignoring received data");
+		return;
+	}
+
     if (client == _commandClient) {
         NSString *response = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
         [self _handleCommandResponse:response];

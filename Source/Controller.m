@@ -9,6 +9,8 @@
 	
 	_ftpClient = nil;
 	
+	[cancelDownloadButton setEnabled:NO];
+	
 	// default downloads to user's "Downloads" directory
 	NSString *homeDirectory = NSHomeDirectory();
 	NSString *downloadsPath = [homeDirectory stringByAppendingPathComponent:@"Downloads"];
@@ -33,6 +35,16 @@
 											 selector:@selector(handleDownloadSucceeded:)
 												 name:@"fileDownloaded"
 											   object:nil];
+											   
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(handleDownloadStarted:)
+												 name:@"downloadStarted"
+											   object:nil];
+											   
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(handleDownloadCancelled:)
+												 name:@"downloadCancelled"
+											   object:nil];
 	
 	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
 	[[Logger sharedInstance] log:@"Uppercut started"];
@@ -47,12 +59,22 @@
     }
 }
 
+- (IBAction)onClickCancelDownload:(id)sender {
+	NSLog(@"CONTROLLER | cancel download clicked");
+	[_browser cancelCurrentDownload];
+	[cancelDownloadButton setEnabled:NO];
+}
+
 - (void)handleConnectionUpdate:(NSNotification *)notification {
 	NSDictionary *connectionInfo = [notification userInfo];
 	NSLog(@"CONTROLLER | Received 'connectionUpdate' with %@", connectionInfo);
 	NSNumber *numState = [connectionInfo objectForKey:@"state"];
 	NetworkStatusState state = [numState intValue];
 	[networkStatusController setConnectionState:state];
+}
+
+- (void)handleDownloadStarted:(NSNotification *)notification {
+	[cancelDownloadButton setEnabled:YES];
 }
 
 - (void)handleDownloadProgress:(NSNotification *)notification {
@@ -64,6 +86,7 @@
 - (void)handleDownloadSucceeded:(NSNotification *)notification {
 	NSDictionary *downloadInfo = [notification userInfo];
 	NSLog(@"CONTROLLER | Received 'fileDownloaded' with %@", downloadInfo);
+	[cancelDownloadButton setEnabled:NO];
 	[downloadViewController reset];
 }
 

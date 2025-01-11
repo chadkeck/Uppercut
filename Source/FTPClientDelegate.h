@@ -7,4 +7,5 @@
 - (void)ftpClientDidConnect:(id)client;
 - (void)ftpClientDidDisconnect:(id)client;
 - (void)ftpClientDidAuthenticate:(id)client;
+- (void)ftpClientDidAbortTransfer:(id)client;
 @end
