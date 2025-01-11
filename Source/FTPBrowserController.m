@@ -9,6 +9,12 @@ NSMutableData *_downloadBuffer;
 NSString *_downloadFilename;
 NSString *_downloadPath;
 NSFileHandle *_downloadFileHandle;
+float _downloadProgress;
+unsigned long long _currentFileSize;
+unsigned long long _bytesReceived;
+unsigned long _writeCount;
+unsigned long _lastSyncBytes;  // Track bytes at last sync
+const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
 @end
 
 @implementation FTPBrowserController
@@ -21,6 +27,19 @@ NSFileHandle *_downloadFileHandle;
     NSLog(@"Current path components: %@", _currentPath);
     NSLog(@"Cache keys: %@", [_directoryCache allKeys]);
     NSLog(@"--------------------");
+}
+
+- (void)_syncFileHandle {
+    if (!_downloadFileHandle) return;
+
+    NS_DURING
+        // Force synchronous write to disk
+        [_downloadFileHandle synchronizeFile];
+        fsync([_downloadFileHandle fileDescriptor]);
+        _lastSyncBytes = _bytesReceived;
+    NS_HANDLER
+        NSLog(@"Warning: Failed to sync file handle: %@", [localException reason]);
+    NS_ENDHANDLER
 }
 
 - (void)_cleanupDownload {
@@ -188,14 +207,13 @@ NSFileHandle *_downloadFileHandle;
 }
 
 - (void)ftpClient:(id)client didReceiveFileSize:(unsigned long long)size forFile:(NSString *)filename {
-	_bytesReceived = 0;
-	_currentFileSize = size;
-	_downloadProgress = 0.0;
-
     [_downloadFilename release];
     _downloadFilename = [[filename lastPathComponent] retain];
 
     _currentFileSize = size;
+    _bytesReceived = 0;
+    _writeCount = 0;
+    _lastSyncBytes = 0;
     _downloadProgress = 0.0;
 
     NSFileManager *fileManager = [NSFileManager defaultManager];
@@ -287,22 +305,31 @@ NSFileHandle *_downloadFileHandle;
 }
 
 - (void)ftpClient:(id)client didReceiveData:(NSData *)data forFile:(NSString *)filename {
-    if (!filename || !_downloadFileHandle) {
+     if (!filename || !_downloadFileHandle) {
         return;
     }
 
-    // Write data chunk to file
     NS_DURING
+        // Write data chunk to file
         [_downloadFileHandle writeData:data];
-		
-		// Update progress
-		_bytesReceived += [data length];
-		if (_currentFileSize > 0) {
-			_downloadProgress = (double)_bytesReceived / (double)_currentFileSize;
-		}
+        _writeCount++;
+
+        // Update progress tracking
+        _bytesReceived += [data length];
+        if (_currentFileSize > 0) {
+            _downloadProgress = (double)_bytesReceived / (double)_currentFileSize;
+        }
+
+        // Check if enough new data has accumulated since last sync
+        if (_bytesReceived - _lastSyncBytes >= SYNC_THRESHOLD) {
+            [self _syncFileHandle];
+        }
 
         // Check if this is the end of transfer (data length 0)
         if ([data length] == 0) {
+            // Final sync to ensure all data is written
+            [self _syncFileHandle];
+
             // Close file handle and notify success
             [_downloadFileHandle closeFile];
             [_downloadFileHandle release];
@@ -318,12 +345,9 @@ NSFileHandle *_downloadFileHandle;
                                                             userInfo:info];
 
             [self _cleanupDownload];
-            NSLog(@"Download complete");
         }
     NS_HANDLER
         NSLog(@"Error writing to file: %@", [localException reason]);
-
-        // Clean up and notify error
         [self _cleanupDownload];
 
         NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:

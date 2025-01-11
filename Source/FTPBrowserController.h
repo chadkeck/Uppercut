@@ -15,10 +15,6 @@
 
     // Loading state
     BOOL _isLoading;
-	
-	float _downloadProgress;
-	unsigned long long _currentFileSize;
-	unsigned long long _bytesReceived;
 }
 
 - (id)init;
