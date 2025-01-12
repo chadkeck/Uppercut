@@ -7,6 +7,7 @@
             OUTLETS = {
                 "_browser" = FTPBrowserController; 
                 cancelDownloadButton = NSButton; 
+                connectButton = NSButton; 
                 downloadDirectoryTextField = NSTextField; 
                 downloadViewController = DownloadViewController; 
                 networkStatusController = NetworkStatusController; 

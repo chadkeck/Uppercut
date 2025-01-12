@@ -1,5 +1,6 @@
 #import "IRCClient.h"
 #import "Logger.h"
+#import "NetworkStatusEnum.h"
 
 @implementation IRCClient
 
@@ -76,6 +77,7 @@
 
 
 
+
 /*
 	[_tcpClient setHost:[self host]];
 	[_tcpClient setPort:[self port]];
@@ -83,6 +85,7 @@
 	[_tcpClient connect];
     return YES;
 */
+
 }
 
 - (BOOL)processPrivateMessage:(NSString *)message {
@@ -99,8 +102,8 @@
 	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
 	NSArray *components = [message componentsSeparatedByString:controlBString];
 
-	NSString *ftpHost = [[components objectAtIndex:2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
-	NSString *ftpPort = [[components objectAtIndex:4] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	NSString *ftpHost =     [[components objectAtIndex:2] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+	NSString *ftpPort =     [[components objectAtIndex:4] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 	NSString *ftpUsername = [[components objectAtIndex:6] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 	NSString *ftpPassword = [[components objectAtIndex:8] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
 	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
@@ -116,6 +119,7 @@
 - (void)disconnect {
 	[self sendMessage:@"QUIT"];
 	[_tcpClient disconnect];
+	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
 }
 
 - (BOOL)sendMessage:(NSString *)message {
@@ -168,10 +172,22 @@
     _delegate = delegate;
 }
 
+- (void)_sendConnectionUpdate:(NSNumber *)state {
+	NSDictionary *connectionInfo = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"IRC Connection Update", @"update",
+		state, @"state",
+		nil];
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"connectionUpdate"
+													object:self
+												  userInfo:connectionInfo];
+}
+
 // TCPClientDelegate methods
 - (void)tcpClientDidConnect:(id)client {
 	NSLog(@"IRC | tcpClientDidConnect");
 	_isConnected = YES;
+	
+	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateConnected]];
 
 	[self sendMessage:@"NICK app_learning_irc"];
 	[self sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
@@ -229,11 +245,13 @@
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"IRC | Connection failed with error: %@", error);
 	_isConnected = NO;
+	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
 }
 
 - (void)tcpClientDidDisconnect:(id)client {
 	NSLog(@"IRC | tcpClientDidDisconnect");
 	_isConnected = NO;
+	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
 }
 
 @end

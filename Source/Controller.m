@@ -9,6 +9,8 @@
 	
 	_ftpClient = nil;
 	
+	_isConnected = NO;
+	
 	[cancelDownloadButton setEnabled:NO];
 	
 	// default downloads to user's "Downloads" directory
@@ -62,6 +64,14 @@
 	NSNumber *numState = [connectionInfo objectForKey:@"state"];
 	NetworkStatusState state = [numState intValue];
 	[networkStatusController setConnectionState:state];
+	
+	if (state == NetworkStatusStateDisconnected) {
+		_isConnected = NO;
+		[connectButton setTitle:@"Connect"];
+	} else if (state == NetworkStatusStateConnected) {
+		_isConnected = YES;
+		[connectButton setTitle:@"Disconnect"];
+	}
 }
 
 - (void)handleDownloadStarted:(NSNotification *)notification {
@@ -166,7 +176,7 @@
 	[_browser setDownloadDirectory:directory];
 }
 
-- (IBAction)onClickConnect:(id)sender {
+- (void)_connectToEfnet {
     NSArray *efnetServers = [NSArray arrayWithObjects:
 		@"irc.efnet.nl", // banned
 		@"irc.deft.com", // banned
@@ -183,6 +193,16 @@
 	[_ircClient setHost:[efnetServers objectAtIndex:randomIndex]];
 	[_ircClient setPort:6667];
 	[_ircClient connect];
+}
+
+- (IBAction)onClickConnect:(id)sender {
+	if (_isConnected) {
+		[connectButton setTitle:@"Connect"];
+		// TODO need to send disconnect messages to other components
+	} else {
+		[connectButton setTitle:@"Disconnect"];
+		[self _connectToEfnet];
+	}
 }
 
 @end

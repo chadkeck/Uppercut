@@ -11,6 +11,7 @@
 @interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
 	IBOutlet NSTextField *downloadDirectoryTextField;
 	IBOutlet NSButton *cancelDownloadButton;
+	IBOutlet NSButton *connectButton;
 
 	IBOutlet NetworkStatusController *networkStatusController;
 	IBOutlet DownloadViewController *downloadViewController;
@@ -18,6 +19,7 @@
 	FTPClient *_ftpClient;
 	IBOutlet FTPBrowserController *_browser;
     NSPanel *_openPanel;
+	BOOL _isConnected; // to IRC, FTP, or both
 }
 
 #pragma mark - UI Actions
