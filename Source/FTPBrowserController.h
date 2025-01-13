@@ -39,4 +39,7 @@
 - (void)ftpClientDidDisconnect:(id)client;
 - (void)ftpClientDidAuthenticate:(id)client;
 
+#pragma mark - Private
+- (void)_cleanupDownload;
+
 @end

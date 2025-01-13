@@ -65,7 +65,7 @@
 		nil];
 	NSLog(@"IRC CLIENT | fake details %@", connectionDetails);
 	
-	if (_delegate && [_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
+	if (_delegate && [(id)_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
 		[_delegate ircClient:self didReceiveCredentials:connectionDetails];
 	}
 	return NO;
@@ -172,6 +172,9 @@
     _delegate = delegate;
 }
 
+- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
+}
+
 - (void)_sendConnectionUpdate:(NSNumber *)state {
 	NSDictionary *connectionInfo = [NSDictionary dictionaryWithObjectsAndKeys:
 		@"IRC Connection Update", @"update",
@@ -226,7 +229,7 @@
 					NSLog(@"Got a privmsg");
 					if ([self processPrivateMessage:message]) {
 						NSDictionary *ftpConnectionDetails = [self getFTPConnectionDetails:message];
-						if (_delegate && [_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
+						if (_delegate && [(id)_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
 							[_delegate ircClient:self didReceiveCredentials:ftpConnectionDetails];
 						}
 

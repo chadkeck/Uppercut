@@ -13,6 +13,7 @@
 - (void)setLogPanel:(NSPanel *)panel;
 - (void)setLogView:(NSTextView *)view;
 - (void)log:(NSString *)message;
+- (void)appendLogMessage:(NSString *)logMessage;
 - (void)clear;
 - (void)saveLog;
 - (void)loadLog;

@@ -586,7 +586,7 @@ id findEntryWithFilename(NSArray *array, NSString *filename) {
 }
 
 - (void)browserSelectionDidChange:(id)sender {
-    NSString *path = [self _pathForColumn:[_browser selectedColumn]];
+//    NSString *path = [self _pathForColumn:[_browser selectedColumn]];
     NSString *selectedItem = [[_browser selectedCell] stringValue];
 	NSLog(@"BROWSER | browserSelectionDidChange | selectedItem %@", selectedItem);
 

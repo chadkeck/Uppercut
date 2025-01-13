@@ -34,6 +34,7 @@
 
 #pragma mark - IRCClientDelegate
 - (void)setDelegate:(id<IRCClientDelegate>)delegate;
+- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
 
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;

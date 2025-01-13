@@ -8,7 +8,7 @@
 #import "NetworkStatusController.h"
 #import "DownloadViewController.h"
 
-@interface Controller : NSObject <TCPClientDelegate, IRCClientDelegate, FTPClientDelegate> {
+@interface Controller : NSObject <IRCClientDelegate> {
 	IBOutlet NSTextField *downloadDirectoryTextField;
 	IBOutlet NSButton *cancelDownloadButton;
 	IBOutlet NSButton *connectButton;
@@ -17,7 +17,7 @@
 	IBOutlet DownloadViewController *downloadViewController;
 	IRCClient *_ircClient;
 	IBOutlet FTPBrowserController *_browser;
-    NSPanel *_openPanel; // For setting download directory
+    NSOpenPanel *_openPanel; // For setting download directory
 	BOOL _isConnected; // to IRC, FTP, or both
 }
 

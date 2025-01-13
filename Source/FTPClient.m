@@ -345,7 +345,7 @@ unsigned long long _currentFileSize;
                 _expectedFileSize = size;
                 NSLog(@"FTP | File size is %llu bytes", _expectedFileSize);
 
-                if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveFileSize:forFile:)]) {
+                if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClient:didReceiveFileSize:forFile:)]) {
                     [_delegate ftpClient:self didReceiveFileSize:_expectedFileSize forFile:_currentFile];
                 }
 
@@ -396,7 +396,7 @@ unsigned long long _currentFileSize;
 		
 		case 230: // User logged in
 			_isAuthenticated = YES;
-			if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidAuthenticate:)]) {
+			if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClientDidAuthenticate:)]) {
 				[_delegate ftpClientDidAuthenticate:self];
 			}
 			break;
@@ -422,7 +422,7 @@ unsigned long long _currentFileSize;
 
 - (void)_notifyAbortComplete {
     NSLog(@"FTP | Abort sequence complete");
-    if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidAbortTransfer:)]) {
+    if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClientDidAbortTransfer:)]) {
         [_delegate ftpClientDidAbortTransfer:self];
     }
 }
@@ -439,7 +439,7 @@ unsigned long long _currentFileSize;
         NSArray *entries = [response componentsSeparatedByString:@"\n"];
         NSLog(@"FTP | entries count: %d", [entries count]);
 
-        if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveDirectoryListing:)]) {
+        if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClient:didReceiveDirectoryListing:)]) {
             [_delegate ftpClient:self didReceiveDirectoryListing:entries];
         }
     }
@@ -452,7 +452,7 @@ unsigned long long _currentFileSize;
 	if (client == _commandClient) {
 		_isConnected = YES;
 		
-		if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidConnect:)]) {
+		if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClientDidConnect:)]) {
 			[_delegate ftpClientDidConnect:self];
 		}
 	}
@@ -487,13 +487,13 @@ unsigned long long _currentFileSize;
 				double progress = (double)_currentFileSize / (double)_expectedFileSize;
 //				NSLog(@"FTP | download progress %.2f%%", progress * 100);
 				
-				if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didUpdateProgress:bytesReceived:forFile:)]) {
+				if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClient:didUpdateProgress:bytesReceived:forFile:)]) {
 					[_delegate ftpClient:self didUpdateProgress:progress bytesReceived:_currentFileSize forFile:_currentFile];
 				}
 			}
 
 			// Send the data to delegate
-			if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
+			if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClient:didReceiveData:forFile:)]) {
 				[_delegate ftpClient:self didReceiveData:data forFile:_currentFile];
 			}
         }
@@ -502,7 +502,7 @@ unsigned long long _currentFileSize;
 
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"FTP | tcpClient didFailWithError (%@)", error);
-	if (_delegate && [_delegate respondsToSelector:@selector(ftpClient:didFailWithError:)]) {
+	if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClient:didFailWithError:)]) {
 		[_delegate ftpClient:self didFailWithError:error];
 	}
 }
@@ -512,7 +512,7 @@ unsigned long long _currentFileSize;
 		_isConnected = NO;
 		_isAuthenticated = NO;
 		
-		if (_delegate && [_delegate respondsToSelector:@selector(ftpClientDidDisconnect:)]) {
+		if (_delegate && [(id)_delegate respondsToSelector:@selector(ftpClientDidDisconnect:)]) {
 			[_delegate ftpClientDidDisconnect:self];
 		}
 	}

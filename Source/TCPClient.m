@@ -175,7 +175,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     _isConnected = NO;
     NSLog(@"Disconnected");
     
-    if (_delegate && [_delegate respondsToSelector:@selector(tcpClientDidDisconnect:)]) {
+    if (_delegate && [(id)_delegate respondsToSelector:@selector(tcpClientDidDisconnect:)]) {
         [_delegate tcpClientDidDisconnect:self];
     }
 }
@@ -199,13 +199,13 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 
 - (void)handleConnect {
     _isConnected = YES;
-    if (_delegate && [_delegate respondsToSelector:@selector(tcpClientDidConnect:)]) {
+    if (_delegate && [(id)_delegate respondsToSelector:@selector(tcpClientDidConnect:)]) {
         [_delegate tcpClientDidConnect:self];
     }
 }
 
 - (void)handleReceiveData:(NSData *)data {
-    if (_delegate && [_delegate respondsToSelector:@selector(tcpClient:didReceiveData:)]) {
+    if (_delegate && [(id)_delegate respondsToSelector:@selector(tcpClient:didReceiveData:)]) {
         [_delegate tcpClient:self didReceiveData:data];
     } else {
 		NSLog(@"TCP | no delegate to handle received data");
@@ -213,7 +213,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 }
 
 - (void)handleError:(NSError *)error {
-    if (_delegate && [_delegate respondsToSelector:@selector(tcpClient:didFailWithError:)]) {
+    if (_delegate && [(id)_delegate respondsToSelector:@selector(tcpClient:didFailWithError:)]) {
         [_delegate tcpClient:self didFailWithError:error];
     }
     [self disconnect];

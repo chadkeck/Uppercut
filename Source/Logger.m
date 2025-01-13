@@ -6,11 +6,14 @@
 static Logger *sharedInstance = nil;
 
 + (Logger *)sharedInstance {
-	@synchronized(self) {
-		if (sharedInstance == nil) {
-			sharedInstance = [[Logger alloc] init];
-		}
+	NSLock *lock = [[NSLock alloc] init];
+	[lock lock];
+	if (sharedInstance == nil) {
+		sharedInstance = [[Logger alloc] init];
 	}
+	[lock unlock];
+	[lock release];
+	
 	return sharedInstance;
 }
 

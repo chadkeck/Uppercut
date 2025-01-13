@@ -1,15 +1,13 @@
 #import <Foundation/Foundation.h>
 #import "TCPClient.h"
-
-// Forward declarations
-@protocol FTPClientDelegate;
+#import "FTPClientDelegate.h"
 
 typedef enum {
     FTPTransferModeActive = 0,
     FTPTransferModePassive = 1
 } FTPTransferMode;
 
-@interface FTPClient : NSObject {
+@interface FTPClient : NSObject <TCPClientDelegate> {
     TCPClient *_commandClient;  // For FTP commands
     TCPClient *_dataClient;     // For data transfers
 
@@ -55,11 +53,13 @@ typedef enum {
 - (void)listDirectory:(NSString *)path;
 - (void)changeDirectory:(NSString *)path;
 - (void)downloadFile:(NSString *)path;
-- (void)uploadFile:(NSString *)path withData:(NSData *)data;
 - (void)abortTransfer;
 
 // Delegate
 - (void)setDelegate:(id<FTPClientDelegate>)delegate;
+
+// Private
+- (void)_notifyAbortComplete;
 
 @end
 
