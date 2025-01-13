@@ -81,22 +81,21 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     [_browser setAllowsMultipleSelection:NO];
     [_browser setAllowsEmptySelection:NO];
     [_browser setHasHorizontalScroller:YES];
-
     [_browser setDoubleAction:@selector(handleDoubleClick:)];
+	
+	_ftpClient = [[FTPClient alloc] init];
+	[_ftpClient setDelegate:self];
 
     // Load initial directory
     [self refresh];
 }
 
-- (void)setFTPClient:(FTPClient *)client {
-	NSLog(@"BROWSER | setFTPClient %@ | _browser %@", client, _browser);
-    if (_ftpClient != client) {
-        [client retain];
-        [_ftpClient release];
-        _ftpClient = client;
-
-        [_ftpClient setDelegate:self];
-    }
+- (void)connectToFTP:(NSString *)host withUsername:(NSString *)username password:(NSString *)password {
+	[_ftpClient setHost:host];
+	[_ftpClient setPort:21];
+	[_ftpClient setUsername:username];
+	[_ftpClient setPassword:password];
+	[_ftpClient connect];
 }
 
 - (void)refresh {

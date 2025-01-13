@@ -7,8 +7,6 @@
 	_ircClient = [[IRCClient alloc] init];
 	[_ircClient setDelegate:self];
 	
-	_ftpClient = nil;
-	
 	_isConnected = NO;
 	[cancelDownloadButton setEnabled:NO];
 	
@@ -104,7 +102,6 @@
 
 - (void)dealloc {
 	[_ircClient release];
-	[_ftpClient release];
 	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_browser release];
@@ -115,20 +112,12 @@
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
 	NSLog(@"CONTROLLER | didReceiveCredentials | credentials: (%@)", credentials);
 
-	// this is kind of wonky that we have the _ftpClient here instead of wrapping
-	// all of it inside the FTPBrowserController
-	_ftpClient = [[FTPClient alloc] init];
-	[_ftpClient setHost:[credentials objectForKey:@"host"]];
-	[_ftpClient setPort:21];
-	[_ftpClient setUsername:[credentials objectForKey:@"username"]];
-	[_ftpClient setPassword:[credentials objectForKey:@"password"]];
-	[_ftpClient connect];
-	
+	NSString *host = [credentials objectForKey:@"host"];
+	NSString *username = [credentials objectForKey:@"username"];
+	NSString *password = [credentials objectForKey:@"password"];
+	[_browser connectToFTP:host withUsername:username password:password];
+
 	[networkStatusController setConnectionState:NetworkStatusStateWaiting];
-	
-	NSLog(@"CONTROLLER | didReceiveCredentials | _browser %@", _browser);
-	
-	[_browser setFTPClient:_ftpClient];
 }
 
 - (IBAction)onClickSaveTo:(id)sender {

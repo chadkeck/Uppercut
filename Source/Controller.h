@@ -16,9 +16,8 @@
 	IBOutlet NetworkStatusController *networkStatusController;
 	IBOutlet DownloadViewController *downloadViewController;
 	IRCClient *_ircClient;
-	FTPClient *_ftpClient;
 	IBOutlet FTPBrowserController *_browser;
-    NSPanel *_openPanel;
+    NSPanel *_openPanel; // For setting download directory
 	BOOL _isConnected; // to IRC, FTP, or both
 }
 
@@ -35,6 +34,5 @@
 - (void)_installObservers;
 - (void)_setDownloadDirectory:(NSString *)directory;
 - (void)_openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
-
 
 @end

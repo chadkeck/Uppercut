@@ -21,7 +21,7 @@
 - (void)dealloc;
 
 // Public methods
-- (void)setFTPClient:(FTPClient *)client;
+- (void)connectToFTP:(NSString *)host withUsername:(NSString *)username password:(NSString *)password;
 - (void)refresh;
 - (void)setDownloadDirectory:(NSString *)directory;
 - (void)cancelCurrentDownload;
