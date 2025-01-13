@@ -2,7 +2,7 @@
 #import "IRCClientDelegate.h"
 #import "TCPClient.h"
 
-@interface IRCClient : NSObject {
+@interface IRCClient : NSObject <IRCClientDelegate, TCPClientDelegate> {
     TCPClient *_tcpClient;
     NSString *_host;
     int _port;
@@ -30,6 +30,7 @@
 - (NSString *)_getRandomUser;
 - (NSString *)_getRandomString:(int)length;
 - (BOOL)answerPing:(NSString *)pingMessage;
+- (void)_sendConnectionUpdate:(NSNumber *)state;
 
 #pragma mark - IRCClientDelegate
 - (void)setDelegate:(id<IRCClientDelegate>)delegate;
