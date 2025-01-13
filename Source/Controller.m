@@ -10,14 +10,23 @@
 	_ftpClient = nil;
 	
 	_isConnected = NO;
-	
 	[cancelDownloadButton setEnabled:NO];
 	
+	[self _setDefaultDownloadDirectory];
+	[self _installObservers];
+	
+	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
+	[[Logger sharedInstance] log:@"Uppercut started"];
+}
+
+- (void)_setDefaultDownloadDirectory {
 	// default downloads to user's "Downloads" directory
 	NSString *homeDirectory = NSHomeDirectory();
 	NSString *downloadsPath = [homeDirectory stringByAppendingPathComponent:@"Downloads"];
 	[self _setDownloadDirectory:downloadsPath];
-	
+}
+
+- (void)_installObservers {
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(handleFileClicked:)
 												 name:@"fileClicked"
@@ -47,9 +56,6 @@
 											 selector:@selector(handleDownloadCancelled:)
 												 name:@"downloadCancelled"
 											   object:nil];
-	
-	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
-	[[Logger sharedInstance] log:@"Uppercut started"];
 }
 
 - (IBAction)onClickCancelDownload:(id)sender {

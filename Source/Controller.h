@@ -31,6 +31,8 @@
 - (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
 
 #pragma mark - private
+- (void)_setDefaultDownloadDirectory;
+- (void)_installObservers;
 - (void)_setDownloadDirectory:(NSString *)directory;
 - (void)_openPanelDidEnd:(NSOpenPanel *)sheet returnCode:(int)returnCode contextInfo:(void *)contextInfo;
 
