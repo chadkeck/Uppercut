@@ -20,13 +20,13 @@
 - (id)init;
 - (void)dealloc;
 
-// Public methods
+#pragma mark - Public methods
 - (void)connectToFTP:(NSString *)host withUsername:(NSString *)username password:(NSString *)password;
 - (void)refresh;
 - (void)setDownloadDirectory:(NSString *)directory;
 - (void)cancelCurrentDownload;
 
-// Actions
+#pragma mark - UI Actions
 - (IBAction)browserSelectionDidChange:(id)sender;
 
 #pragma mark - FTPClientDelegate
