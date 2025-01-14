@@ -10,7 +10,6 @@
         _host = nil;
         _port = 0;
         _isConnected = NO;
-		_debounceTimer = nil;
 		_delegate = nil;
 		
 		_tcpClient = [[TCPClient alloc] init];
@@ -28,7 +27,7 @@
     // Release retained objects
 	[_tcpClient release];
 	[_host release];
-	[_debounceTimer release];
+
     [super dealloc];
 }
 

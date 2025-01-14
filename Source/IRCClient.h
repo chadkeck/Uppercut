@@ -7,7 +7,6 @@
     NSString *_host;
     int _port;
     BOOL _isConnected;
-	NSTimer *_debounceTimer;
 	id<IRCClientDelegate> _delegate;
 }
 
