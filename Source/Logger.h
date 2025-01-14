@@ -8,15 +8,19 @@
 	NSCalendarDate *lastDate;
 }
 
+#pragma mark - Public
 + (Logger *)sharedInstance;
-
+- (void)log:(NSString *)message;
+- (void)clear;
 - (void)setLogPanel:(NSPanel *)panel;
 - (void)setLogView:(NSTextView *)view;
-- (void)log:(NSString *)message;
 - (void)appendLogMessage:(NSString *)logMessage;
-- (void)clear;
+
+#pragma mark - Protected
 - (void)saveLog;
 - (void)loadLog;
+
+#pragma mark - UI Actions
 - (IBAction)onToggleVisible:(id)sender;
 
 @end
