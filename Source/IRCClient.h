@@ -11,7 +11,7 @@
 	id<IRCClientDelegate> _delegate;
 }
 
-// Method declarations
+#pragma mark - Getters/setters
 - (id)init;
 - (void)dealloc;
 
@@ -20,17 +20,20 @@
 - (void)setPort:(int)port;
 - (int)port;
 
+#pragma mark - Connection
 - (BOOL)connect;
 - (void)disconnect;
-- (BOOL)sendMessage:(NSString *)message;
 - (BOOL)isConnected;
 
 #pragma mark - Private
 - (NSString *)_getRandomNick;
 - (NSString *)_getRandomUser;
 - (NSString *)_getRandomString:(int)length;
-- (BOOL)answerPing:(NSString *)pingMessage;
+- (BOOL)_sendMessage:(NSString *)message;
+- (BOOL)_answerPing:(NSString *)pingMessage;
 - (void)_sendConnectionUpdate:(NSNumber *)state;
+- (BOOL)_processPrivateMessage:(NSString *)message;
+- (NSDictionary *)_getFTPConnectionDetails:(NSString *)message;
 
 #pragma mark - IRCClientDelegate
 - (void)setDelegate:(id<IRCClientDelegate>)delegate;

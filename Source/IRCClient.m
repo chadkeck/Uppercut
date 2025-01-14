@@ -32,6 +32,8 @@
     [super dealloc];
 }
 
+#pragma mark Getters/setters
+
 - (void)setHost:(NSString *)host {
 	NSLog(@"IRC CLIENT  | setHost (%@)", host);
     // Retain new value, release old value
@@ -51,6 +53,8 @@
 - (int)port {
     return _port;
 }
+
+#pragma mark - Connection
 
 - (BOOL)isConnected {
     return _isConnected;
@@ -88,7 +92,15 @@
 
 }
 
-- (BOOL)processPrivateMessage:(NSString *)message {
+- (void)disconnect {
+	[self _sendMessage:@"QUIT"];
+	[_tcpClient disconnect];
+	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
+}
+
+#pragma mark - Private
+
+- (BOOL)_processPrivateMessage:(NSString *)message {
 	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
 	NSArray *components = [message componentsSeparatedByString:controlBString];
 
@@ -98,7 +110,7 @@
 	return NO;
 }
 
-- (NSDictionary *)getFTPConnectionDetails:(NSString *)message {
+- (NSDictionary *)_getFTPConnectionDetails:(NSString *)message {
 	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
 	NSArray *components = [message componentsSeparatedByString:controlBString];
 
@@ -116,13 +128,7 @@
 	return connectionDetails;
 }
 
-- (void)disconnect {
-	[self sendMessage:@"QUIT"];
-	[_tcpClient disconnect];
-	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
-}
-
-- (BOOL)sendMessage:(NSString *)message {
+- (BOOL)_sendMessage:(NSString *)message {
     if (!_isConnected) {
         return NO;
     }
@@ -135,11 +141,11 @@
 	return YES;
 }
 
-- (BOOL)answerPing:(NSString *)pingMessage {
+- (BOOL)_answerPing:(NSString *)pingMessage {
 	NSArray *components = [pingMessage componentsSeparatedByString:@":"];
 	if ([components count] == 2) {
 		NSString *pongResponse = [NSString stringWithFormat:@"PONG :%@", [components objectAtIndex:1]];
-		[self sendMessage:pongResponse];
+		[self _sendMessage:pongResponse];
 	}
 	return NO;
 }
@@ -166,15 +172,6 @@
     return randomString;
 }
 
-- (void)setDelegate:(id<IRCClientDelegate>)delegate {
-	NSLog(@"irc client setDelegate: %@", delegate);
-    // Delegates are not retained to avoid retain cycles
-    _delegate = delegate;
-}
-
-- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
-}
-
 - (void)_sendConnectionUpdate:(NSNumber *)state {
 	NSDictionary *connectionInfo = [NSDictionary dictionaryWithObjectsAndKeys:
 		@"IRC Connection Update", @"update",
@@ -185,17 +182,30 @@
 												  userInfo:connectionInfo];
 }
 
-// TCPClientDelegate methods
+#pragma mark - IRCClientDelegate
+
+- (void)setDelegate:(id<IRCClientDelegate>)delegate {
+	NSLog(@"irc client setDelegate: %@", delegate);
+    // Delegates are not retained to avoid retain cycles
+    _delegate = delegate;
+}
+
+- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
+	// do nothing
+}
+
+#pragma mark - TCPClientDelegate
+
 - (void)tcpClientDidConnect:(id)client {
 	NSLog(@"IRC | tcpClientDidConnect");
 	_isConnected = YES;
 	
 	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateConnected]];
 
-	[self sendMessage:@"NICK app_learning_irc"];
-	[self sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
-//	[self sendMessage:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
-//	[self sendMessage:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
+	[self _sendMessage:@"NICK app_learning_irc"];
+	[self _sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
+//	[self _sendMessage:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
+//	[self _sendMessage:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
@@ -215,20 +225,20 @@
 	// example message: :irc.efnet.nl 001 {nick} :Welcome to EFNet...
 	
 	if ([message hasPrefix:@"PING "]) {
-		[self answerPing:message];
+		[self _answerPing:message];
 	} else {
 		if ([message hasPrefix:@":"]) {
 			NSArray *components = [message componentsSeparatedByString:@" "];
 			if ([components count] > 0) {
 				NSString *possibleCommand = [components objectAtIndex:1];
 			if ([possibleCommand isEqualToString:@"001"]) {
-					[self sendMessage:@"JOIN #xbins"];
+					[self _sendMessage:@"JOIN #xbins"];
 				} else if ([possibleCommand isEqualToString:@"332"]) {
-					[self sendMessage:@"PRIVMSG #xbins !list"];
+					[self _sendMessage:@"PRIVMSG #xbins !list"];
 				} else if ([possibleCommand isEqualToString:@"PRIVMSG"]) {
 					NSLog(@"Got a privmsg");
-					if ([self processPrivateMessage:message]) {
-						NSDictionary *ftpConnectionDetails = [self getFTPConnectionDetails:message];
+					if ([self _processPrivateMessage:message]) {
+						NSDictionary *ftpConnectionDetails = [self _getFTPConnectionDetails:message];
 						if (_delegate && [(id)_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
 							[_delegate ircClient:self didReceiveCredentials:ftpConnectionDetails];
 						}
