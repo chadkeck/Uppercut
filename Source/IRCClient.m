@@ -10,7 +10,6 @@
         _host = nil;
         _port = 0;
         _isConnected = NO;
-		_delegate = nil;
 		
 		_tcpClient = [[TCPClient alloc] init];
 		[_tcpClient setDelegate:self];
@@ -68,9 +67,9 @@
 		nil];
 	NSLog(@"IRC CLIENT | fake details %@", connectionDetails);
 	
-	if (_delegate && [(id)_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
-		[_delegate ircClient:self didReceiveCredentials:connectionDetails];
-	}
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"ftpCredentialsReceived"
+														object:self
+													  userInfo:connectionDetails];
 	return NO;
 
 
@@ -181,18 +180,6 @@
 												  userInfo:connectionInfo];
 }
 
-#pragma mark - IRCClientDelegate
-
-- (void)setDelegate:(id<IRCClientDelegate>)delegate {
-	NSLog(@"irc client setDelegate: %@", delegate);
-    // Delegates are not retained to avoid retain cycles
-    _delegate = delegate;
-}
-
-- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
-	// do nothing
-}
-
 #pragma mark - TCPClientDelegate
 
 - (void)tcpClientDidConnect:(id)client {
@@ -238,10 +225,9 @@
 					NSLog(@"Got a privmsg");
 					if ([self _processPrivateMessage:message]) {
 						NSDictionary *ftpConnectionDetails = [self _getFTPConnectionDetails:message];
-						if (_delegate && [(id)_delegate respondsToSelector:@selector(ircClient:didReceiveCredentials:)]) {
-							[_delegate ircClient:self didReceiveCredentials:ftpConnectionDetails];
-						}
-
+						[[NSNotificationCenter defaultCenter] postNotificationName:@"ftpCredentialsReceived"
+																			object:self
+																		  userInfo:ftpConnectionDetails];
 						[self disconnect];
 					}
 				}

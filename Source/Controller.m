@@ -4,7 +4,6 @@
 
 - (void)awakeFromNib {
 	_ircClient = [[IRCClient alloc] init];
-	[_ircClient setDelegate:self];
 	
 	_isConnected = NO;
 	[cancelDownloadButton setEnabled:NO];
@@ -49,6 +48,11 @@
 	[[NSNotificationCenter defaultCenter] addObserver:self
 											 selector:@selector(handleDownloadCancelled:)
 												 name:@"downloadCancelled"
+											   object:nil];
+											   
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(handleFTPCredentialsReceived:)
+												 name:@"ftpCredentialsReceived"
 											   object:nil];
 }
 
@@ -105,12 +109,16 @@
 	[super dealloc];
 }
 
-- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials {
-	NSLog(@"CONTROLLER | didReceiveCredentials | credentials: (%@)", credentials);
+- (void)handleFTPCredentialsReceived:(NSNotification *)notification {
+	NSDictionary *credentials = [notification userInfo];
+	NSLog(@"CONTROLLER | handleFTPCredentialsReceived | credentials: (%@)", credentials);
 
 	NSString *host = [credentials objectForKey:@"host"];
+	NSLog(@"host %@", host);
 	NSString *username = [credentials objectForKey:@"username"];
+	NSLog(@"username %@", username);
 	NSString *password = [credentials objectForKey:@"password"];
+	NSLog(@"password %@", password);
 	[_browser connectToFTP:host withUsername:username password:password];
 
 	[networkStatusController setConnectionState:NetworkStatusStateWaiting];

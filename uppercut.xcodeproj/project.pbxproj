@@ -45,7 +45,6 @@
 		5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusEnum.h; path = Source/NetworkStatusEnum.h; sourceTree = "<group>"; };
 		5D12D8512D174DF900CA148D /* IRCClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = IRCClient.h; path = Source/IRCClient.h; sourceTree = "<group>"; };
 		5D12D8522D174DF900CA148D /* IRCClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = IRCClient.m; path = Source/IRCClient.m; sourceTree = "<group>"; };
-		5D5E9A212D198D5A00FF4EE3 /* IRCClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = IRCClientDelegate.h; path = Source/IRCClientDelegate.h; sourceTree = "<group>"; };
 		5D6A46722D1994F90001639D /* FTPClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPClient.h; path = Source/FTPClient.h; sourceTree = "<group>"; };
 		5D6A46732D1994F90001639D /* FTPClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = FTPClient.m; path = Source/FTPClient.m; sourceTree = "<group>"; };
 		5D6A46742D1994F90001639D /* FTPClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPClientDelegate.h; path = Source/FTPClientDelegate.h; sourceTree = "<group>"; };
@@ -177,7 +176,6 @@
 				5D6A46722D1994F90001639D /* FTPClient.h */,
 				5D6A46732D1994F90001639D /* FTPClient.m */,
 				5D6A46742D1994F90001639D /* FTPClientDelegate.h */,
-				5D5E9A212D198D5A00FF4EE3 /* IRCClientDelegate.h */,
 				5D12D8512D174DF900CA148D /* IRCClient.h */,
 				5D12D8522D174DF900CA148D /* IRCClient.m */,
 				5D0D4C152D16EC8A00BB9BA8 /* NetworkStatusController.h */,

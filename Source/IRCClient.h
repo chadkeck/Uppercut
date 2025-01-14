@@ -1,13 +1,11 @@
 #import <Foundation/Foundation.h>
-#import "IRCClientDelegate.h"
 #import "TCPClient.h"
 
-@interface IRCClient : NSObject <IRCClientDelegate, TCPClientDelegate> {
+@interface IRCClient : NSObject <TCPClientDelegate> {
     TCPClient *_tcpClient;
     NSString *_host;
     int _port;
     BOOL _isConnected;
-	id<IRCClientDelegate> _delegate;
 }
 
 #pragma mark - Getters/setters
@@ -33,10 +31,6 @@
 - (void)_sendConnectionUpdate:(NSNumber *)state;
 - (BOOL)_processPrivateMessage:(NSString *)message;
 - (NSDictionary *)_getFTPConnectionDetails:(NSString *)message;
-
-#pragma mark - IRCClientDelegate
-- (void)setDelegate:(id<IRCClientDelegate>)delegate;
-- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
 
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;

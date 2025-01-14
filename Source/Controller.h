@@ -8,7 +8,7 @@
 #import "NetworkStatusController.h"
 #import "DownloadViewController.h"
 
-@interface Controller : NSObject <IRCClientDelegate> {
+@interface Controller : NSObject {
 	IBOutlet NSTextField *downloadDirectoryTextField;
 	IBOutlet NSButton *cancelDownloadButton;
 	IBOutlet NSButton *connectButton;
@@ -25,9 +25,6 @@
 - (IBAction)onClickConnect:(id)sender;
 - (IBAction)onClickSaveTo:(id)sender;
 - (IBAction)onClickCancelDownload:(id)sender;
-
-#pragma mark - IRCClientDelegate
-- (void)ircClient:(id)client didReceiveCredentials:(NSDictionary *)credentials;
 
 #pragma mark - private
 - (void)_setDefaultDownloadDirectory;
