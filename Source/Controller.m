@@ -1,5 +1,4 @@
 #import "Controller.h"
-#import "Logger.h"
 
 @implementation Controller
 
@@ -11,10 +10,7 @@
 	[cancelDownloadButton setEnabled:NO];
 	
 	[self _setDefaultDownloadDirectory];
-	[self _installObservers];
-	
-	// FIXME: there must be a better place to put this, like applicationDidFinishLaunching
-	[[Logger sharedInstance] log:@"Uppercut started"];
+	[self _installObservers];	
 }
 
 - (void)_setDefaultDownloadDirectory {

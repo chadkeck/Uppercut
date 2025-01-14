@@ -1,5 +1,6 @@
 {
     IBClasses = (
+        {CLASS = AppDelegate; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
             ACTIONS = {onClickCancelDownload = id; onClickConnect = id; onClickSaveTo = id; }; 
             CLASS = Controller; 

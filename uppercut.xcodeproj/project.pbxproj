@@ -14,6 +14,7 @@
 		5D7011E32D17A77E00DEA217 /* Logger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D7011E22D17A77E00DEA217 /* Logger.m */; };
 		5DA3B6FF2D19A2D80088147D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DA3B6FE2D19A2D80088147D /* CoreServices.framework */; };
 		5DB07EE82D2C64D4009ED038 /* DownloadViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DB07EE72D2C64D4009ED038 /* DownloadViewController.m */; };
+		5DB26ECB2D35FD230028B89F /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DB26ECA2D35FD230028B89F /* AppDelegate.m */; };
 		5DC443FA2D1655CA00A6B02A /* Controller.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F62D1655CA00A6B02A /* Controller.m */; };
 		5DC443FB2D1655CA00A6B02A /* TCPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5DC443F82D1655CA00A6B02A /* TCPClient.m */; };
 		5DC444422D165E3700A6B02A /* status-available.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 5DC4443E2D165E3700A6B02A /* status-available.tiff */; };
@@ -53,6 +54,8 @@
 		5DA3B6FE2D19A2D80088147D /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		5DB07EE62D2C64D4009ED038 /* DownloadViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = DownloadViewController.h; path = Source/DownloadViewController.h; sourceTree = "<group>"; };
 		5DB07EE72D2C64D4009ED038 /* DownloadViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = DownloadViewController.m; path = Source/DownloadViewController.m; sourceTree = "<group>"; };
+		5DB26EC92D35FD230028B89F /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = Source/AppDelegate.h; sourceTree = "<group>"; };
+		5DB26ECA2D35FD230028B89F /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AppDelegate.m; path = Source/AppDelegate.m; sourceTree = "<group>"; };
 		5DC443F52D1655CA00A6B02A /* Controller.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Controller.h; path = Source/Controller.h; sourceTree = "<group>"; };
 		5DC443F62D1655CA00A6B02A /* Controller.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = Controller.m; path = Source/Controller.m; sourceTree = "<group>"; };
 		5DC443F72D1655CA00A6B02A /* TCPClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = TCPClient.h; path = Source/TCPClient.h; sourceTree = "<group>"; };
@@ -187,6 +190,8 @@
 				5DC443F92D1655CA00A6B02A /* TCPClientDelegate.h */,
 				5D7011E12D17A76E00DEA217 /* Logger.h */,
 				5D7011E22D17A77E00DEA217 /* Logger.m */,
+				5DB26EC92D35FD230028B89F /* AppDelegate.h */,
+				5DB26ECA2D35FD230028B89F /* AppDelegate.m */,
 			);
 			name = Source;
 			sourceTree = "<group>";
@@ -259,6 +264,7 @@
 				5D02D0322D19F7BF0030B544 /* FTPBrowserController.m in Sources */,
 				5DFED2FE2D1A53530028A0F1 /* FTPListParser.m in Sources */,
 				5DB07EE82D2C64D4009ED038 /* DownloadViewController.m in Sources */,
+				5DB26ECB2D35FD230028B89F /* AppDelegate.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
