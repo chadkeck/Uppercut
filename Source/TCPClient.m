@@ -13,11 +13,11 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     switch (type) {
         case kCFSocketConnectCallBack: {
             if (data == NULL) {
-                NSLog(@"Connection established successfully");
+                NSLog(@"TCP | Connection established successfully");
                 [client performSelectorOnMainThread:@selector(handleConnect) 
                     withObject:nil waitUntilDone:NO];
             } else {
-                NSLog(@"Connection failed");
+                NSLog(@"TCP | Connection failed");
                 NSError *error = [NSError errorWithDomain:@"TCPClientError" 
                     code:1 userInfo:nil];
                 [client performSelectorOnMainThread:@selector(handleError:) 
@@ -104,7 +104,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 
 - (BOOL)connect {
     if (_socket != NULL) {
-		NSLog(@"socket is not NULL");
+		NSLog(@"TCP | socket is not NULL");
         return NO;
     }
     
@@ -119,7 +119,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
         socketCallback, &context);
         
     if (_socket == NULL) {
-        NSLog(@"Failed to create socket");
+        NSLog(@"TCP | Failed to create socket");
         return NO;
     }
     
@@ -137,7 +137,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     // Resolve hostname
     struct hostent *host = gethostbyname([_host UTF8String]);
     if (!host) {
-        NSLog(@"Failed to resolve hostname");
+        NSLog(@"TCP | Failed to resolve hostname");
         [self disconnect];
         return NO;
     }
@@ -154,7 +154,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     CFSocketConnectToAddress(_socket, addressData, -1);
     CFRelease(addressData);
     
-    NSLog(@"Attempting connection to %@:%d", _host, _port);
+    NSLog(@"TCP | Attempting connection to %@:%d", _host, _port);
     return YES;
 }
 
@@ -173,7 +173,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     }
     
     _isConnected = NO;
-    NSLog(@"Disconnected");
+    NSLog(@"TCP | Disconnected");
     
     if (_delegate && [(id)_delegate respondsToSelector:@selector(tcpClientDidDisconnect:)]) {
         [_delegate tcpClientDidDisconnect:self];
@@ -187,10 +187,10 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
     
     CFSocketError result = CFSocketSendData(_socket, NULL, (CFDataRef)data, -1);
     if (result == kCFSocketSuccess) {
-        NSLog(@"Sent %d bytes of data", [data length]);
+        NSLog(@"TCP | Sent %d bytes of data", [data length]);
         return YES;
     } else {
-        NSLog(@"Failed to send data");
+        NSLog(@"TCP | Failed to send data");
         return NO;
     }
 }
