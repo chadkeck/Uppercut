@@ -7,6 +7,7 @@
 	IBOutlet NSButton *connectButton;
 
 	IRCClient *_ircClient;
+	BOOL _isConnecting;
 }
 
 #pragma mark - Public

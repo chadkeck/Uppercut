@@ -2,8 +2,11 @@
 
 @implementation InitialConnectionController
 
+NSString *kConnectButtonText = @"Connect to xbins";
+
 - (void)awakeFromNib {
 	_ircClient = [[IRCClient alloc] init];
+	_isConnecting = NO;
 	
 	[spinner setHidden:YES];
 	[statusTextField setHidden:YES];
@@ -25,9 +28,11 @@
 }
 
 - (void)reset {
+	_isConnecting = NO;
 	[spinner setHidden:YES];
 	[statusTextField setHidden:YES];
 	[statusTextField setStringValue:@""];
+	[connectButton setTitle:kConnectButtonText];
 }
 
 - (void)_handleConnectionUpdate:(NSNotification *)notification {
@@ -45,10 +50,14 @@
 
 
 - (IBAction)onClickConnect:(id)sender {
-	[self _connectToEfnet];
-	
-	// TODO change connect button to Cancel and implement handler to cancel
-	// connection
+	if (!_isConnecting) {
+		_isConnecting = YES;
+		[self _connectToEfnet];
+		[connectButton setTitle:@"Cancel"];
+	} else {
+		[_ircClient disconnect];
+		[self reset];
+	}
 }
 
 - (void)_connectToEfnet {
