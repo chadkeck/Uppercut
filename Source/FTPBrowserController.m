@@ -3,7 +3,7 @@
 #import "NetworkStatusEnum.h"
 
 @interface FTPBrowserController (Private)
-- (void)_loadDirectoryAtPath:(NSString *)path;
+- (void)_loadDirectoryAtPath:(NSString *)path column:(int)column;
 - (NSString *)_pathForColumn:(int)column;
 NSMutableData *_downloadBuffer;
 NSString *_downloadFilename;
@@ -15,6 +15,8 @@ unsigned long long _bytesReceived;
 unsigned long _writeCount;
 unsigned long _lastSyncBytes;  // Track bytes at last sync
 const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
+BOOL _receivedFirstDirectoryListing;
+NSMutableSet *_loadingColumns; // Track which column we're loading
 @end
 
 @implementation FTPBrowserController
@@ -50,8 +52,10 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
         _directoryCache = [[NSMutableDictionary alloc] init];
         _currentPath = [[NSMutableArray alloc] init];
         _isLoading = NO;
+        _loadingColumns = [[NSMutableSet alloc] init];
         _downloadBuffer = [[NSMutableData alloc] init];
         _downloadFilename = nil;
+        _receivedFirstDirectoryListing = NO;
 
         // Add root path
         [_currentPath addObject:@"/"];
@@ -68,6 +72,7 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     [_currentPath release];
     [_browser release];
     [_downloadBuffer release];
+    [_loadingColumns release];
 
     [super dealloc];
 }
@@ -82,6 +87,11 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     [_browser setAllowsEmptySelection:NO];
     [_browser setHasHorizontalScroller:YES];
     [_browser setDoubleAction:@selector(handleDoubleClick:)];
+
+    // Important: Enable action sending on selection
+    [_browser setSendsActionOnArrowKeys:YES];
+    [_browser setTarget:self];
+    [_browser setAction:@selector(_handleBrowserAction:)];
 	
 	_ftpClient = [[FTPClient alloc] init];
 	[_ftpClient setDelegate:self];
@@ -89,6 +99,90 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     // Load initial directory
     [self refresh];
 }
+
+- (void)_handleBrowserAction:(id)sender {
+    NSLog(@"BROWSER | _handleBrowserAction");
+    [self _handleSelectionInColumn:[_browser selectedColumn]];
+}
+
+- (void)_handleSelectionInColumn:(int)column {
+    NSLog(@"BROWSER | _handleSelectionInColumn: %d", column);
+
+    NSString *currentPath = [self _pathForColumn:column];
+    NSArray *listing = [_directoryCache objectForKey:currentPath];
+
+    if (!listing) {
+        NSLog(@"BROWSER | No listing found for path: %@", currentPath);
+        return;
+    }
+
+    int selectedRow = [_browser selectedRowInColumn:column];
+    if (selectedRow < 0 || selectedRow >= [listing count]) {
+        NSLog(@"BROWSER | Invalid row selected: %d", selectedRow);
+        return;
+    }
+
+    NSDictionary *entry = [listing objectAtIndex:selectedRow];
+    NSString *filename = [entry objectForKey:@"filename"];
+    BOOL isDirectory = [[entry objectForKey:@"isDirectory"] boolValue];
+
+    NSLog(@"BROWSER | Selected %@ (directory?: %@)", filename, isDirectory ? @"YES" : @"NO");
+
+    // Update current path array
+    while ([_currentPath count] > column + 1) {
+        [_currentPath removeLastObject];
+    }
+
+    [_currentPath addObject:filename];
+    NSLog(@"BROWSER | Updated path array: %@", _currentPath);
+
+    // If directory, load next column
+    if (isDirectory) {
+        int nextColumn = column + 1;
+        NSString *newPath = [self _pathForColumn:nextColumn];
+        NSLog(@"BROWSER | Loading new directory: %@", newPath);
+
+        // Clear cache for deeper paths
+        NSEnumerator *enumerator = [_directoryCache keyEnumerator];
+        NSString *key;
+        NSMutableArray *keysToRemove = [NSMutableArray array];
+        while ((key = [enumerator nextObject])) {
+            if ([self _getColumnForPath:key] >= nextColumn) {
+                [keysToRemove addObject:key];
+            }
+        }
+
+        enumerator = [keysToRemove objectEnumerator];
+        while ((key = [enumerator nextObject])) {
+            [_directoryCache removeObjectForKey:key];
+        }
+
+        // Load the directory in the next column
+        [self _loadDirectoryAtPath:newPath column:nextColumn];
+    }
+}
+
+- (int)_getColumnForPath:(NSString *)path {
+    if ([path isEqualToString:@"/"]) {
+        return 0;
+    }
+
+    // Count slashes to determine depth, but don't count trailing slash
+    NSString *cleanPath = [path hasSuffix:@"/"] ?
+        [path substringToIndex:[path length] - 1] : path;
+
+    int slashCount = 0;
+    int i;
+    for (i = 0; i < [cleanPath length]; i++) {
+        if ([cleanPath characterAtIndex:i] == '/') {
+            slashCount++;
+        }
+    }
+
+    // First slash doesn't count for column number since it's the root
+    return slashCount > 0 ? slashCount - 1 : 0;
+}
+
 
 - (void)connectToFTP:(NSString *)host withUsername:(NSString *)username password:(NSString *)password {
 	[_ftpClient setHost:host];
@@ -161,24 +255,21 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
 
 #pragma mark - Private Methods
 
-- (void)_loadDirectoryAtPath:(NSString *)path {
-    if (_isLoading) {
-		NSLog(@"BROWSER | WARNING | _loadDirectoryAtPath(%@) already loading", path);
+- (void)_loadDirectoryAtPath:(NSString *)path column:(int)column {
+	if ([_loadingColumns containsObject:[NSNumber numberWithInt:column]]) {
+        NSLog(@"BROWSER | WARNING | Column %d already loading path %@", column, path);
         return;
     }
-    
-    _isLoading = YES;
-	
-	NSLog(@"BROWSER | _loadDirectoryAtPath %@", path);
-    
-    // Check cache first
-    NSArray *cachedListing = [_directoryCache objectForKey:path];
-    if (cachedListing) {
-		NSLog(@"BROWSER | _loadDirectoryAtPath | CACHE HIT %@", path);
-        _isLoading = NO;
-        return;
-    }
-    
+
+    NSLog(@"BROWSER | _loadDirectoryAtPath %@ for column %d", path, column);
+
+    // Mark this column as loading
+    [_loadingColumns addObject:[NSNumber numberWithInt:column]];
+	NSLog(@"BROWSER | _loadDirectoryAtPath _loadingColumns: (%@)", _loadingColumns);
+
+    // Clear cache for this path
+    [_directoryCache removeObjectForKey:path];
+
     // Request directory listing from FTP client
     [_ftpClient listDirectory:path];
 }
@@ -189,22 +280,15 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     NSLog(@"  Column requested: %d", column);
     NSLog(@"  Current path array: %@", _currentPath);
 
-    // Always start with root
-    [path appendString:@"/"];
-
-    // Don't include the root slash from _currentPath if it's there
-    int startIndex = [[_currentPath objectAtIndex:0] isEqualToString:@"/"] ? 1 : 0;
-
-    // Only process up to the requested column
-    int endIndex = column + 1;
-    if (endIndex > [_currentPath count]) {
-        endIndex = [_currentPath count];
+    // Special case for root
+    if (column == 0) {
+        NSLog(@"  Returning root path /");
+        return @"/";
     }
 
-    NSLog(@"  Processing components from index %d to %d", startIndex, endIndex);
-
+    // Build path from components
     int i;
-    for (i = startIndex; i < endIndex; i++) {
+    for (i = 0; i <= column && i < [_currentPath count]; i++) {
         NSString *component = [_currentPath objectAtIndex:i];
 
         // Skip empty components
@@ -217,16 +301,30 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
             continue;
         }
 
-        // Remove leading slash from component if present
+        // Clean up component
         if ([component hasPrefix:@"/"]) {
             component = [component substringFromIndex:1];
         }
+        if ([component hasSuffix:@"/"]) {
+            component = [component substringToIndex:[component length] - 1];
+        }
 
-        // Add component with leading slash if needed
-        if (![path hasSuffix:@"/"]) {
+        // Add component
+        if (i == 0) {
             [path appendString:@"/"];
         }
-        [path appendString:component];
+
+        if ([component length] > 0) {
+            if (![path hasSuffix:@"/"]) {
+                [path appendString:@"/"];
+            }
+            [path appendString:component];
+        }
+    }
+
+    // Ensure path starts with /
+    if (![path hasPrefix:@"/"]) {
+        [path insertString:@"/" atIndex:0];
     }
 
     NSLog(@"  Final path: %@", path);
@@ -452,109 +550,78 @@ const unsigned long SYNC_THRESHOLD = 1024 * 1024 * 10;  // Sync every 10MB
     NSString *path = [self _pathForColumn:column];
     NSArray *listing = [_directoryCache objectForKey:path];
 
-    // Clear this column and higher columns when loading new data
-    if (!listing) {
-        // If we're already loading this path, don't request it again
-        if (!_isLoading) {
-            NSEnumerator *enumerator = [_directoryCache keyEnumerator];
-            NSString *key;
-            NSMutableArray *keysToRemove = [NSMutableArray array];
+//    NSLog(@"BROWSER | numberOfRowsInColumn:%d | loadingColumns:%@", column, _loadingColumns);
 
-            while ((key = [enumerator nextObject])) {
-                if ([self _getColumnForPath:key] >= column) {
-                    [keysToRemove addObject:key];
-                }
-            }
-
-            enumerator = [keysToRemove objectEnumerator];
-            while ((key = [enumerator nextObject])) {
-                [_directoryCache removeObjectForKey:key];
-            }
-
-            // Request new directory listing
-            [self _loadDirectoryAtPath:path];
-        }
-        return 1;  // Always show exactly one "Loading..." row
+    // If this column is loading, show one row
+    if ([_loadingColumns containsObject:[NSNumber numberWithInt:column]]) {
+	    NSLog(@"BROWSER | numberOfRowsInColumn:%d | will return 1 since we're loading", column);
+        return 1;
     }
 
-    return [listing count];
-}
-
-- (int)_getColumnForPath:(NSString *)path {
-    if ([path isEqualToString:@"/"]) {
-        return 0;
+    // If we have a listing, return its count
+    if (listing) {
+		NSLog(@"BROWSER | numberOfRowsInColumn:%d | will return %d because we already have it loaded", column, [listing count]);
+		NSLog(@"    path: (%@), listing: (%@)", path, listing);
+        return [listing count];
     }
 
-    NSArray *components = [path componentsSeparatedByString:@"/"];
-    // Subtract 1 because the first component will be empty (path starts with /)
-    int count = [components count] - 1;
-    return count > 0 ? count : 0;
+    // Start loading this column
+	NSLog(@"BROWSER | numberOfRowsInColumn:%d | will return 1 because we need to load it");
+    [self _loadDirectoryAtPath:path column:column];
+    return 1;
 }
 
 - (void)browser:(NSBrowser *)sender willDisplayCell:(id)cell atRow:(int)row column:(int)column {
-    NSLog(@"BROWSER | willDisplayCell at row %d and column %d", row, column);
-    NSString *path = [self _pathForColumn:column];
-    NSArray *listing = [_directoryCache objectForKey:path];
-
-    // Always set a default font first
+    NSLog(@"BROWSER | willDisplayCell at column %d and row %d", column, row);
+	NSLog(@"BROWSER | willDisplayCell _loadingColumns: (%@)", _loadingColumns);
+    
+    // Always set default font
     NSFont *regularFont = [NSFont systemFontOfSize:12.0];
     [cell setFont:regularFont];
-
-    if (!listing) {
-        // Show loading state
+    
+    // Show loading state if this column is loading
+    if ([_loadingColumns containsObject:[NSNumber numberWithInt:column]]) {
+		NSLog(@"BROWSER | willDisplayCell YEEEEEEEEEEEESSSSSSSSSSSSSSSSSSSSSSSSSSSSSS");
         [cell setStringValue:@"Loading..."];
         [cell setLeaf:YES];
         return;
     }
 
-    if (row < [listing count]) {
-        NSDictionary *entry = [listing objectAtIndex:row];
-        NSString *filename = [entry objectForKey:@"filename"];
-
-        // Guard against nil filename
-        if (filename == nil) {
-            NSLog(@"WARN: Nil filename found in entry: %@", entry);
-            [cell setStringValue:@"[Error]"];
-            [cell setLeaf:YES];
-            return;
-        }
-
-        BOOL isDirectory = [[entry objectForKey:@"isDirectory"] boolValue];
-
-        NSLog(@"CELL | filename %@", filename);
-        [cell setStringValue:filename];
-        [cell setLeaf:!isDirectory];
+    NSString *path = [self _pathForColumn:column];
+    NSArray *listing = [_directoryCache objectForKey:path];
+    
+    if (!listing || row >= [listing count]) {
+        [cell setStringValue:@"Loading..."];
+        [cell setLeaf:YES];
+        return;
     }
+
+    NSDictionary *entry = [listing objectAtIndex:row];
+    NSString *filename = [entry objectForKey:@"filename"];
+    BOOL isDirectory = [[entry objectForKey:@"isDirectory"] boolValue];
+    
+    if (!filename) {
+        NSLog(@"WARN: Nil filename found in entry: %@", entry);
+        [cell setStringValue:@"[Error]"];
+        [cell setLeaf:YES];
+        return;
+    }
+
+    NSLog(@"CELL | filename %@", filename);
+    [cell setStringValue:filename];
+    [cell setLeaf:!isDirectory];
 }
 
 - (BOOL)browser:(NSBrowser *)sender selectRow:(int)row inColumn:(int)column {
+    NSLog(@"BROWSER | selectRow:%d inColumn:%d", row, column);
     NSString *path = [self _pathForColumn:column];
     NSArray *listing = [_directoryCache objectForKey:path];
-	
-	[self _logBrowserState:@"Before selection"];
 
     if (!listing || row >= [listing count]) {
         return NO;
     }
 
-    NSDictionary *entry = [listing objectAtIndex:row];
-    BOOL isDirectory = [[entry objectForKey:@"isDirectory"] boolValue];
-
-    // Update the path
-    NSString *name = [entry objectForKey:@"name"];
-
-    // Update current path array
-    while ([_currentPath count] > column + 1) {
-        [_currentPath removeLastObject];
-    }
-    [_currentPath addObject:name];
-
-    // If this is a directory, preload the next column
-    if (isDirectory) {
-        NSString *newPath = [self _pathForColumn:column + 1];
-        [self _loadDirectoryAtPath:newPath];
-    }
-
+    // Let the browser update its selection
     return YES;
 }
 
@@ -615,98 +682,119 @@ id findEntryWithFilename(NSArray *array, NSString *filename) {
     NSString *selectedItem = [[_browser selectedCell] stringValue];
     NSLog(@"BROWSER | browserSelectionDidChange | selectedItem %@", selectedItem);
 
-    if (selectedItem && [selectedItem isEqualToString:@"Loading..."]) return;
+    if (!selectedItem || [selectedItem isEqualToString:@"Loading..."]) {
+        return;
+    }
 
     int selectedColumn = [_browser selectedColumn];
-    int nextColumn = selectedColumn + 1;
+    NSString *currentPath = [self _pathForColumn:selectedColumn];
+    NSArray *listing = [_directoryCache objectForKey:currentPath];
 
-    // Only proceed if we're not in a loading state
-    if (![selectedItem isEqualToString:@"Loading..."]) {
-        // Update current path
-        while ([_currentPath count] > nextColumn) {
-            NSLog(@"BROWSER | removing last object from (%@)", _currentPath);
-            [_currentPath removeLastObject];
+    // Find the selected entry in the current directory listing
+    NSEnumerator *enumerator = [listing objectEnumerator];
+    NSDictionary *entry;
+    NSDictionary *selectedEntry = nil;
+    while ((entry = [enumerator nextObject])) {
+        if ([[entry objectForKey:@"filename"] isEqualToString:selectedItem]) {
+            selectedEntry = entry;
+            break;
         }
+    }
 
-        if (selectedItem) {  // Only add if we have a valid selection
-            NSLog(@"BROWSER | adding object to _currentPath (%@)", selectedItem);
-            [_currentPath addObject:selectedItem];
+    if (!selectedEntry) {
+        NSLog(@"BROWSER | Warning: Could not find selected entry %@ in listing", selectedItem);
+        return;
+    }
 
-            // Load the next directory if this is a directory
-            if (![[_browser selectedCell] isLeaf]) {
-                NSString *newPath = [self _pathForColumn:nextColumn];
-                [self _loadDirectoryAtPath:newPath];
+    BOOL isDirectory = [[selectedEntry objectForKey:@"isDirectory"] boolValue];
 
-                // Clear any cached data for higher columns
-                NSEnumerator *enumerator = [_directoryCache keyEnumerator];
-                NSString *key;
-                NSMutableArray *keysToRemove = [NSMutableArray array];
+    // Update current path array
+    while ([_currentPath count] > selectedColumn + 1) {
+        [_currentPath removeLastObject];
+    }
 
-                while ((key = [enumerator nextObject])) {
-                    if ([self _getColumnForPath:key] > selectedColumn) {
-                        [keysToRemove addObject:key];
-                    }
-                }
+    [_currentPath addObject:selectedItem];
+    NSLog(@"BROWSER | Updated path array: %@", _currentPath);
 
-                enumerator = [keysToRemove objectEnumerator];
-                while ((key = [enumerator nextObject])) {
-                    [_directoryCache removeObjectForKey:key];
-                }
+    // Load the next directory if this is a directory
+    if (isDirectory) {
+        int nextColumn = selectedColumn + 1;
+        NSString *newPath = [self _pathForColumn:nextColumn];
+        NSLog(@"BROWSER | Loading directory at path: %@", newPath);
 
-                // Force browser to reload the next column
-                [_browser reloadColumn:nextColumn];
+        // Clear cache for this path and all deeper paths
+        NSEnumerator *keyEnumerator = [_directoryCache keyEnumerator];
+        NSString *key;
+        NSMutableArray *keysToRemove = [NSMutableArray array];
+
+        while ((key = [keyEnumerator nextObject])) {
+            if ([self _getColumnForPath:key] >= nextColumn) {
+                [keysToRemove addObject:key];
             }
         }
+
+        keyEnumerator = [keysToRemove objectEnumerator];
+        while ((key = [keyEnumerator nextObject])) {
+            [_directoryCache removeObjectForKey:key];
+        }
+
+        [self _loadDirectoryAtPath:newPath column:nextColumn];
+        [_browser reloadColumn:nextColumn];
     }
 }
 
 #pragma mark - FTPClientDelegate Methods
 
 - (void)ftpClient:(id)client didReceiveDirectoryListing:(NSArray *)entries {
-	NSLog(@"BROWSER | didReceiveDirectoryListing: %@", entries);
-	
-	[self _logBrowserState:@"Before adding new directory listing"];
-	
-    // Convert entries into dictionaries with name and isDirectory
+    int loadingColumn = [[_loadingColumns anyObject] intValue];
+    NSLog(@"BROWSER | didReceiveDirectoryListing for column %d", loadingColumn);
+    NSLog(@"BROWSER | entries: %@", entries);
+    
+    [self _logBrowserState:@"Before adding new directory listing"];
+
+    // Handle first listing notification
+    if (!_receivedFirstDirectoryListing) {
+        NSLog(@"BROWSER | Received first directory listing");
+        _receivedFirstDirectoryListing = YES;
+
+        NSDictionary *info = [NSDictionary dictionaryWithObjectsAndKeys:
+            [NSNumber numberWithInt:[entries count]], @"entryCount",
+            nil];
+
+        [[NSNotificationCenter defaultCenter]
+            postNotificationName:@"firstDirectoryListing"
+            object:self
+            userInfo:info];
+    }
+
+    // Convert entries into dictionaries
     NSMutableArray *listing = [NSMutableArray array];
     NSEnumerator *enumerator = [entries objectEnumerator];
     NSString *entry;
     
     while ((entry = [enumerator nextObject])) {
-//            // Skip . and .. entries
-//            if ([name isEqualToString:@"."] || [name isEqualToString:@".."]) {
-//                continue;
-//            }
-		
-		NSDictionary *fileInfo = [FTPListParser dictionaryFromLine:entry];
-		if (fileInfo) {
-//			NSLog(@"BROWSER | didReceiveDirectoryListing: parsed fileInfo %@", fileInfo);
-			[listing addObject:fileInfo];
-		} else {
-			NSLog(@"WARN | couldn't parse %@", entry);
-		}
-		
+        NSDictionary *fileInfo = [FTPListParser dictionaryFromLine:entry];
+        if (fileInfo) {
+            [listing addObject:fileInfo];
+        } else {
+            NSLog(@"WARN | couldn't parse %@", entry);
+        }
     }
-	NSLog(@"BROWSER | listing %@", listing);
+    
+    // Get path for loading column
+    NSString *path = [self _pathForColumn:loadingColumn];
     
     // Store in cache
-    NSString *path = [self _pathForColumn:[_browser selectedColumn]+1];
     [_directoryCache setObject:listing forKey:path];
-	
-	NSLog(@"BROWSER | added %d files/dirs to cache at path %@", [listing count], path);
-	
-//	NSLog(@"BROWSER | _directoryCache %@", _directoryCache);
+    NSLog(@"BROWSER | added %d files/dirs to cache at path %@", [listing count], path);
     
-    _isLoading = NO;
+    // Remove the loading state for this column
+    [_loadingColumns removeObject:[NSNumber numberWithInt:loadingColumn]];
     
-    // Reload the browser column
-//	NSLog(@"BROWSER | reloadColumn %d", [_browser selectedColumn]);
-	[_browser reloadColumn:[_browser lastColumn]];
-//    [_browser reloadColumn:[_browser selectedColumn]+1];
-
-
-	
-	[self _logBrowserState:@"After adding new"];
+    // Reload the column
+    [_browser reloadColumn:loadingColumn];
+    
+    [self _logBrowserState:@"After adding new listing"];
 }
 
 - (void)ftpClient:(id)client didFailWithError:(NSError *)error {

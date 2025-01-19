@@ -2,16 +2,17 @@
     IBClasses = (
         {CLASS = AppDelegate; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
         {
-            ACTIONS = {onClickCancelDownload = id; onClickConnect = id; onClickSaveTo = id; }; 
+            ACTIONS = {onClickCancelDownload = id; onClickDisconnect = id; onClickSaveTo = id; }; 
             CLASS = Controller; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 "_browser" = FTPBrowserController; 
                 cancelDownloadButton = NSButton; 
-                connectButton = NSButton; 
+                disconnectButton = NSButton; 
                 downloadDirectoryTextField = NSTextField; 
                 downloadViewController = DownloadViewController; 
                 networkStatusController = NetworkStatusController; 
+                tabView = NSTabView; 
             }; 
             SUPERCLASS = NSObject; 
         }, 
@@ -29,6 +30,17 @@
             SUPERCLASS = NSObject; 
         }, 
         {CLASS = FirstResponder; LANGUAGE = ObjC; SUPERCLASS = NSObject; }, 
+        {
+            ACTIONS = {onClickConnect = id; }; 
+            CLASS = InitialConnectionController; 
+            LANGUAGE = ObjC; 
+            OUTLETS = {
+                connectButton = NSButton; 
+                spinner = NSProgressIndicator; 
+                statusTextField = NSTextField; 
+            }; 
+            SUPERCLASS = NSObject; 
+        }, 
         {
             ACTIONS = {onToggleVisible = id; }; 
             CLASS = Logger; 

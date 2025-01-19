@@ -28,7 +28,7 @@
 - (NSString *)_getRandomString:(int)length;
 - (BOOL)_sendMessage:(NSString *)message;
 - (BOOL)_answerPing:(NSString *)pingMessage;
-- (void)_sendConnectionUpdate:(NSNumber *)state;
+- (void)_sendConnectionUpdate:(NSString *)update withState:(NSNumber *)state;
 - (BOOL)_processPrivateMessage:(NSString *)message;
 - (NSDictionary *)_getFTPConnectionDetails:(NSString *)message;
 

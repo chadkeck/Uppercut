@@ -59,6 +59,7 @@
 }
 
 - (BOOL)connect {
+
 	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
 		@"192.168.1.100", @"host",
 		@"21", @"port",
@@ -80,20 +81,20 @@
 
 
 
-/*
+
 	[_tcpClient setHost:[self host]];
 	[_tcpClient setPort:[self port]];
 	NSLog(@"IRC | connect to %@:%d", [_tcpClient host], [_tcpClient port]);
 	[_tcpClient connect];
     return YES;
-*/
+
 
 }
 
 - (void)disconnect {
 	[self _sendMessage:@"QUIT"];
 	[_tcpClient disconnect];
-	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
+//	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
 }
 
 #pragma mark - Private
@@ -170,9 +171,9 @@
     return randomString;
 }
 
-- (void)_sendConnectionUpdate:(NSNumber *)state {
+- (void)_sendConnectionUpdate:(NSString *)update withState:(NSNumber *)state {
 	NSDictionary *connectionInfo = [NSDictionary dictionaryWithObjectsAndKeys:
-		@"IRC Connection Update", @"update",
+		update, @"update",
 		state, @"state",
 		nil];
 	[[NSNotificationCenter defaultCenter] postNotificationName:@"connectionUpdate"
@@ -186,7 +187,8 @@
 	NSLog(@"IRC | tcpClientDidConnect");
 	_isConnected = YES;
 	
-	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateConnected]];
+	[self _sendConnectionUpdate:@"Connected to IRC..."
+					  withState:[NSNumber numberWithInt:NetworkStatusStateConnected]];
 
 	[self _sendMessage:@"NICK app_learning_irc"];
 	[self _sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
@@ -243,13 +245,17 @@
 - (void)tcpClient:(id)client didFailWithError:(NSError *)error {
 	NSLog(@"IRC | Connection failed with error: %@", error);
 	_isConnected = NO;
-	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
+	[self _sendConnectionUpdate:@"IRC connection failed"
+					 withState:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
 }
 
+// This is called after we disconnect from IRC after received credentials
 - (void)tcpClientDidDisconnect:(id)client {
 	NSLog(@"IRC | tcpClientDidDisconnect");
 	_isConnected = NO;
-	[self _sendConnectionUpdate:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
+
+	// we don't need to send an update message since we'll immediately move into
+	// connecting to FTP
 }
 
 @end

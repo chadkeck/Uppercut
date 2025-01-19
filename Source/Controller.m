@@ -2,14 +2,17 @@
 
 @implementation Controller
 
+NSString *kTabFTP = @"FTP";
+NSString *kTabConnection = @"Connection";
+
 - (void)awakeFromNib {
-	_ircClient = [[IRCClient alloc] init];
-	
 	_isConnected = NO;
 	[cancelDownloadButton setEnabled:NO];
 	
 	[self _setDefaultDownloadDirectory];
-	[self _installObservers];	
+	[self _installObservers];
+
+	[tabView selectTabViewItemWithIdentifier:kTabConnection];
 }
 
 - (void)_setDefaultDownloadDirectory {
@@ -31,6 +34,16 @@
 											  object:nil];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self
+											 selector:@selector(handleFTPCredentialsReceived:)
+												 name:@"ftpCredentialsReceived"
+											   object:nil];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self
+											selector:@selector(_handleFirstDirectoryListing:)
+												name:@"firstDirectoryListing"
+											  object:nil];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self
 											selector:@selector(handleDownloadProgress:)
 												name:@"downloadProgress"
 											  object:nil];
@@ -49,17 +62,19 @@
 											 selector:@selector(handleDownloadCancelled:)
 												 name:@"downloadCancelled"
 											   object:nil];
-											   
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(handleFTPCredentialsReceived:)
-												 name:@"ftpCredentialsReceived"
-											   object:nil];
 }
 
 - (IBAction)onClickCancelDownload:(id)sender {
 	NSLog(@"CONTROLLER | cancel download clicked");
 	[_browser cancelCurrentDownload];
 	[cancelDownloadButton setEnabled:NO];
+}
+
+- (void)_handleFirstDirectoryListing:(NSNotification *)notification {
+	NSDictionary *connectionInfo = [notification userInfo];
+	NSLog(@"CONTROLLER | Received 'firstDirectoryListing' with %@", connectionInfo);
+	[tabView selectTabViewItemWithIdentifier:kTabFTP];
+//	[_browser performSelector:@selector(loadColumnZero) withObject:nil afterDelay:5.0];
 }
 
 - (void)handleConnectionUpdate:(NSNotification *)notification {
@@ -71,10 +86,10 @@
 	
 	if (state == NetworkStatusStateDisconnected) {
 		_isConnected = NO;
-		[connectButton setTitle:@"Connect"];
+//		[connectButton setTitle:@"Connect"];
 	} else if (state == NetworkStatusStateConnected) {
 		_isConnected = YES;
-		[connectButton setTitle:@"Disconnect"];
+//		[connectButton setTitle:@"Disconnect"];
 	}
 }
 
@@ -95,14 +110,13 @@
 	[downloadViewController reset];
 }
 
+// TODO can hook into the user clicking on a file here
 - (void)handleFileClicked:(NSNotification *)notification {
 	NSDictionary *fileInfo = [notification userInfo];
 	NSLog(@"CONTROLLER | Received 'fileClicked' with %@", fileInfo);
 }
 
 - (void)dealloc {
-	[_ircClient release];
-	
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_browser release];
     [_openPanel release];
@@ -175,33 +189,7 @@
 	[_browser setDownloadDirectory:directory];
 }
 
-- (void)_connectToEfnet {
-    NSArray *efnetServers = [NSArray arrayWithObjects:
-		@"irc.efnet.nl", // banned
-		@"irc.deft.com", // banned
-		@"irc.servercentral.net",
-		@"irc.underworld.no",
-		@"efnet.port80.se",
-		@"efnet.deic.eu",
-		@"irc.swepipe.se",
-		@"irc.efnet.fr",
-		@"irc.choopa.net",
-		nil];
 
-	int randomIndex = arc4random() % [efnetServers count];
-	[_ircClient setHost:[efnetServers objectAtIndex:randomIndex]];
-	[_ircClient setPort:6667];
-	[_ircClient connect];
-}
 
-- (IBAction)onClickConnect:(id)sender {
-	if (_isConnected) {
-		[connectButton setTitle:@"Connect"];
-		// TODO need to send disconnect messages to other components
-	} else {
-		[connectButton setTitle:@"Disconnect"];
-		[self _connectToEfnet];
-	}
-}
 
 @end

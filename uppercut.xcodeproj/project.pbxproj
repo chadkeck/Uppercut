@@ -10,6 +10,7 @@
 		5D02D0322D19F7BF0030B544 /* FTPBrowserController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D02D0312D19F7BF0030B544 /* FTPBrowserController.m */; };
 		5D0D4C182D16EC8A00BB9BA8 /* NetworkStatusController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D0D4C162D16EC8A00BB9BA8 /* NetworkStatusController.m */; };
 		5D12D8532D174DF900CA148D /* IRCClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D12D8522D174DF900CA148D /* IRCClient.m */; };
+		5D46BC652D395F9800454422 /* InitialConnectionController.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D46BC642D395F9800454422 /* InitialConnectionController.m */; };
 		5D6A46752D1994F90001639D /* FTPClient.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D6A46732D1994F90001639D /* FTPClient.m */; };
 		5D7011E32D17A77E00DEA217 /* Logger.m in Sources */ = {isa = PBXBuildFile; fileRef = 5D7011E22D17A77E00DEA217 /* Logger.m */; };
 		5DA3B6FF2D19A2D80088147D /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DA3B6FE2D19A2D80088147D /* CoreServices.framework */; };
@@ -45,6 +46,8 @@
 		5D0D4C172D16EC8A00BB9BA8 /* NetworkStatusEnum.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NetworkStatusEnum.h; path = Source/NetworkStatusEnum.h; sourceTree = "<group>"; };
 		5D12D8512D174DF900CA148D /* IRCClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = IRCClient.h; path = Source/IRCClient.h; sourceTree = "<group>"; };
 		5D12D8522D174DF900CA148D /* IRCClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = IRCClient.m; path = Source/IRCClient.m; sourceTree = "<group>"; };
+		5D46BC632D395F9800454422 /* InitialConnectionController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = InitialConnectionController.h; path = Source/InitialConnectionController.h; sourceTree = "<group>"; };
+		5D46BC642D395F9800454422 /* InitialConnectionController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = InitialConnectionController.m; path = Source/InitialConnectionController.m; sourceTree = "<group>"; };
 		5D6A46722D1994F90001639D /* FTPClient.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPClient.h; path = Source/FTPClient.h; sourceTree = "<group>"; };
 		5D6A46732D1994F90001639D /* FTPClient.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; name = FTPClient.m; path = Source/FTPClient.m; sourceTree = "<group>"; };
 		5D6A46742D1994F90001639D /* FTPClientDelegate.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = FTPClientDelegate.h; path = Source/FTPClientDelegate.h; sourceTree = "<group>"; };
@@ -167,6 +170,8 @@
 		5D4D538B2D16550A0070DC05 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				5D46BC632D395F9800454422 /* InitialConnectionController.h */,
+				5D46BC642D395F9800454422 /* InitialConnectionController.m */,
 				5DB07EE62D2C64D4009ED038 /* DownloadViewController.h */,
 				5DB07EE72D2C64D4009ED038 /* DownloadViewController.m */,
 				5DFED2FC2D1A53530028A0F1 /* FTPListParser.h */,
@@ -263,6 +268,7 @@
 				5DFED2FE2D1A53530028A0F1 /* FTPListParser.m in Sources */,
 				5DB07EE82D2C64D4009ED038 /* DownloadViewController.m in Sources */,
 				5DB26ECB2D35FD230028B89F /* AppDelegate.m in Sources */,
+				5D46BC652D395F9800454422 /* InitialConnectionController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

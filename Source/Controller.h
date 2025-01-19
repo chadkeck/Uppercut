@@ -1,7 +1,6 @@
 /* Controller */
 
 #import <Cocoa/Cocoa.h>
-#import "IRCClient.h"
 #import "FTPClient.h"
 #import "FTPBrowserController.h"
 #import "NetworkStatusEnum.h"
@@ -9,20 +8,21 @@
 #import "DownloadViewController.h"
 
 @interface Controller : NSObject {
+	IBOutlet NSTabView *tabView;
+	BOOL _isConnected; // to IRC, FTP, or both
+
+	// Connected/FTP pane
 	IBOutlet NSTextField *downloadDirectoryTextField;
 	IBOutlet NSButton *cancelDownloadButton;
-	IBOutlet NSButton *connectButton;
-
+	IBOutlet NSButton *disconnectButton;
 	IBOutlet NetworkStatusController *networkStatusController;
 	IBOutlet DownloadViewController *downloadViewController;
-	IRCClient *_ircClient;
 	IBOutlet FTPBrowserController *_browser;
     NSOpenPanel *_openPanel; // For setting download directory
-	BOOL _isConnected; // to IRC, FTP, or both
 }
 
 #pragma mark - UI Actions
-- (IBAction)onClickConnect:(id)sender;
+- (IBAction)onClickDisconnect:(id)sender;
 - (IBAction)onClickSaveTo:(id)sender;
 - (IBAction)onClickCancelDownload:(id)sender;
 
