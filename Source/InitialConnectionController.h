@@ -9,6 +9,9 @@
 	IRCClient *_ircClient;
 }
 
+#pragma mark - Public
+- (void)reset;
+
 #pragma mark - UI Actions
 - (IBAction)onClickConnect:(id)sender;
 

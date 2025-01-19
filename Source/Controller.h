@@ -6,6 +6,7 @@
 #import "NetworkStatusEnum.h"
 #import "NetworkStatusController.h"
 #import "DownloadViewController.h"
+#import "InitialConnectionController.h"
 
 @interface Controller : NSObject {
 	IBOutlet NSTabView *tabView;
@@ -17,6 +18,7 @@
 	IBOutlet NSButton *disconnectButton;
 	IBOutlet NetworkStatusController *networkStatusController;
 	IBOutlet DownloadViewController *downloadViewController;
+	IBOutlet InitialConnectionController *initialConnectionController;
 	IBOutlet FTPBrowserController *_browser;
     NSOpenPanel *_openPanel; // For setting download directory
 }

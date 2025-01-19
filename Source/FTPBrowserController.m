@@ -100,6 +100,11 @@ NSMutableSet *_loadingColumns; // Track which column we're loading
     [self refresh];
 }
 
+- (void)disconnect {
+	_receivedFirstDirectoryListing = NO;
+	[_ftpClient disconnect];
+}
+
 - (void)_handleBrowserAction:(id)sender {
     NSLog(@"BROWSER | _handleBrowserAction");
     [self _handleSelectionInColumn:[_browser selectedColumn]];

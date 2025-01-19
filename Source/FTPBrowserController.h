@@ -23,6 +23,7 @@
 #pragma mark - Public methods
 - (void)connectToFTP:(NSString *)host withUsername:(NSString *)username password:(NSString *)password;
 - (void)refresh;
+- (void)disconnect;
 - (void)setDownloadDirectory:(NSString *)directory;
 - (void)cancelCurrentDownload;
 

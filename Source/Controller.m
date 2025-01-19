@@ -70,6 +70,14 @@ NSString *kTabConnection = @"Connection";
 	[cancelDownloadButton setEnabled:NO];
 }
 
+- (IBAction)onClickDisconnect:(id)sender {
+	NSLog(@"CONTROLLER | disconnect button clicked");
+	_isConnected = NO;
+	[_browser disconnect];
+	[initialConnectionController reset];
+	[tabView selectTabViewItemWithIdentifier:kTabConnection];
+}
+
 - (void)_handleFirstDirectoryListing:(NSNotification *)notification {
 	NSDictionary *connectionInfo = [notification userInfo];
 	NSLog(@"CONTROLLER | Received 'firstDirectoryListing' with %@", connectionInfo);

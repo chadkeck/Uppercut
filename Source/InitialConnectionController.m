@@ -24,6 +24,12 @@
 											  object:nil];
 }
 
+- (void)reset {
+	[spinner setHidden:YES];
+	[statusTextField setHidden:YES];
+	[statusTextField setStringValue:@""];
+}
+
 - (void)_handleConnectionUpdate:(NSNotification *)notification {
 	NSDictionary *connectionInfo = [notification userInfo];
 	NSLog(@"INITIAL CONNECTION CONTROLLER | Received 'connectionUpdate' with %@", connectionInfo);
@@ -40,15 +46,9 @@
 
 - (IBAction)onClickConnect:(id)sender {
 	[self _connectToEfnet];
-/*
-	if (_isConnected) {
-		[connectButton setTitle:@"Connect"];
-		// TODO need to send disconnect messages to other components
-	} else {
-		[connectButton setTitle:@"Disconnect"];
-		[self _connectToEfnet];
-	}
-	*/
+	
+	// TODO change connect button to Cancel and implement handler to cancel
+	// connection
 }
 
 - (void)_connectToEfnet {

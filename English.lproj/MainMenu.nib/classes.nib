@@ -11,6 +11,7 @@
                 disconnectButton = NSButton; 
                 downloadDirectoryTextField = NSTextField; 
                 downloadViewController = DownloadViewController; 
+                initialConnectionController = InitialConnectionController; 
                 networkStatusController = NetworkStatusController; 
                 tabView = NSTabView; 
             }; 
