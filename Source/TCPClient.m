@@ -7,6 +7,7 @@
 // Callback function for socket events
 static void socketCallback(CFSocketRef socket, CFSocketCallBackType type, 
     CFDataRef address, const void *data, void *info) {
+	NSLog(@"TCP | socketCallback | type %d", type);
     
     TCPClient *client = (TCPClient *)info;
     
@@ -213,6 +214,7 @@ static void socketCallback(CFSocketRef socket, CFSocketCallBackType type,
 }
 
 - (void)handleError:(NSError *)error {
+	NSLog(@"TCP | handleError (%@)", error);
     if (_delegate && [(id)_delegate respondsToSelector:@selector(tcpClient:didFailWithError:)]) {
         [_delegate tcpClient:self didFailWithError:error];
     }

@@ -12,6 +12,7 @@
 
 #pragma mark - Public
 - (void)reset;
+- (void)showFailureStateWithMessage:(NSString *)message;
 
 #pragma mark - UI Actions
 - (IBAction)onClickConnect:(id)sender;

@@ -3,6 +3,7 @@
 @implementation InitialConnectionController
 
 NSString *kConnectButtonText = @"Connect to xbins";
+NSString *kConnectButtonCancelText = @"Cancel";
 
 - (void)awakeFromNib {
 	_ircClient = [[IRCClient alloc] init];
@@ -25,6 +26,14 @@ NSString *kConnectButtonText = @"Connect to xbins";
 											selector:@selector(_handleConnectionUpdate:)
 												name:@"connectionUpdate"
 											  object:nil];
+}
+
+- (void)showFailureStateWithMessage:(NSString *)message {
+	_isConnecting = NO;
+	[spinner setHidden:YES];
+	[statusTextField setHidden:NO];
+	[statusTextField setStringValue:message];
+	[connectButton setTitle:kConnectButtonText];
 }
 
 - (void)reset {
@@ -53,7 +62,7 @@ NSString *kConnectButtonText = @"Connect to xbins";
 	if (!_isConnecting) {
 		_isConnecting = YES;
 		[self _connectToEfnet];
-		[connectButton setTitle:@"Cancel"];
+		[connectButton setTitle:kConnectButtonCancelText];
 	} else {
 		[_ircClient disconnect];
 		[self reset];
@@ -76,7 +85,12 @@ NSString *kConnectButtonText = @"Connect to xbins";
 	int randomIndex = arc4random() % [efnetServers count];
 	[_ircClient setHost:[efnetServers objectAtIndex:randomIndex]];
 	[_ircClient setPort:6667];
-	[_ircClient connect];
+	BOOL connectOk = [_ircClient connect];
+	if (!connectOk) {
+		[self performSelectorOnMainThread:@selector(showFailureStateWithMessage:) 
+                withObject:@"Failed to connect. Try again." waitUntilDone:NO];
+//		[self showFailureStateWithMessage:@"Failed to connect. Try again."];
+	}
 }
 
 @end

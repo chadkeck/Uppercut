@@ -60,18 +60,21 @@
 
 - (BOOL)connect {
 
-//	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
-//		@"192.168.1.100", @"host",
-//		@"21", @"port",
-//		@"ftpuser", @"username",
-//		@"ftptest", @"password",
-//		nil];
-//	NSLog(@"IRC CLIENT | fake details %@", connectionDetails);
-//	
-//	[[NSNotificationCenter defaultCenter] postNotificationName:@"ftpCredentialsReceived"
-//														object:self
-//													  userInfo:connectionDetails];
-//	return NO;
+/*
+	// Testing connection
+	NSDictionary *connectionDetails = [NSDictionary dictionaryWithObjectsAndKeys:
+		@"192.168.1.100", @"host",
+		@"21", @"port",
+		@"ftpuser", @"username",
+		@"ftptest", @"password",
+		nil];
+	NSLog(@"IRC CLIENT | fake details %@", connectionDetails);
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:@"ftpCredentialsReceived"
+														object:self
+													  userInfo:connectionDetails];
+	return NO;
+*/
 
 
 
@@ -81,14 +84,11 @@
 
 
 
-
+//	[_tcpClient setHost:@"efnet.port80.se"]; // this hostname fails to resolve
 	[_tcpClient setHost:[self host]];
 	[_tcpClient setPort:[self port]];
 	NSLog(@"IRC | connect to %@:%d", [_tcpClient host], [_tcpClient port]);
-	[_tcpClient connect];
-    return YES;
-
-
+	return [_tcpClient connect];
 }
 
 - (void)disconnect {
@@ -249,13 +249,15 @@
 					 withState:[NSNumber numberWithInt:NetworkStatusStateDisconnected]];
 }
 
-// This is called after we disconnect from IRC after received credentials
+// This is called after we disconnect from IRC after received credentials.
+// It's also called when the hostname fails to resolve.
 - (void)tcpClientDidDisconnect:(id)client {
 	NSLog(@"IRC | tcpClientDidDisconnect");
 	_isConnected = NO;
 
-	// we don't need to send an update message since we'll immediately move into
-	// connecting to FTP
+	// Happy path:
+	//   We don't need to send an update message since we'll immediately move into
+	//   connecting to FTP.
 }
 
 @end
