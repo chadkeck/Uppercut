@@ -88,7 +88,6 @@ NSString *kConnectButtonCancelText = @"Cancel";
 	if (!connectOk) {
 		[self performSelectorOnMainThread:@selector(showFailureStateWithMessage:) 
                 withObject:@"Failed to connect. Try again." waitUntilDone:NO];
-//		[self showFailureStateWithMessage:@"Failed to connect. Try again."];
 	}
 }
 
