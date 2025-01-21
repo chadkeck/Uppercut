@@ -75,7 +75,6 @@ NSString *kConnectButtonCancelText = @"Cancel";
 		@"irc.deft.com", // banned
 		@"irc.servercentral.net",
 		@"irc.underworld.no",
-		@"efnet.port80.se", // fails to resolve hostname
 		@"efnet.deic.eu",
 		@"irc.swepipe.se",
 		@"irc.efnet.fr",
