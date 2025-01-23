@@ -190,10 +190,10 @@
 	[self _sendConnectionUpdate:@"Connected to IRC..."
 					  withState:[NSNumber numberWithInt:NetworkStatusStateConnected]];
 
-	[self _sendMessage:@"NICK app_learning_irc"];
-	[self _sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
-//	[self _sendMessage:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
-//	[self _sendMessage:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
+//	[self _sendMessage:@"NICK app_learning_irc"];
+//	[self _sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
+	[self _sendMessage:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
+	[self _sendMessage:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
