@@ -7,7 +7,7 @@
 // Callback function for socket events
 static void socketCallback(CFSocketRef socket, CFSocketCallBackType type, 
     CFDataRef address, const void *data, void *info) {
-	NSLog(@"TCP | socketCallback | type %d", type);
+//	NSLog(@"TCP | socketCallback | type %d", type);
     
     TCPClient *client = (TCPClient *)info;
     
