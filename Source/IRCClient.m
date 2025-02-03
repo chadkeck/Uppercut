@@ -99,6 +99,23 @@
 
 #pragma mark - Private
 
+- (void)_sendMessageWithDelay:(NSString *)message {
+    NSLog(@"IRC | Queuing delayed message: %@", message);
+
+    // Create random delay between 2-4 seconds
+    float delayInterval = (arc4random() % 2000) / 1000.0 + 2.0; // 2.0-4.0 seconds
+
+    DelayedMessage *delayedMessage = [DelayedMessage delayedMessageWithString:message target:self];
+
+    [NSTimer scheduledTimerWithTimeInterval:delayInterval
+                                     target:delayedMessage
+                                   selector:@selector(send)
+                                   userInfo:nil
+                                    repeats:NO];
+
+    NSLog(@"IRC | Message will be sent in %.1f seconds", delayInterval);
+}
+
 - (BOOL)_processPrivateMessage:(NSString *)message {
 	NSString *controlBString = [NSString stringWithFormat:@"%c", 0x02]; // shows as ^B in vim
 	NSArray *components = [message componentsSeparatedByString:controlBString];
@@ -144,7 +161,7 @@
 	NSArray *components = [pingMessage componentsSeparatedByString:@":"];
 	if ([components count] == 2) {
 		NSString *pongResponse = [NSString stringWithFormat:@"PONG :%@", [components objectAtIndex:1]];
-		[self _sendMessage:pongResponse];
+		[self _sendMessageWithDelay:pongResponse];
 	}
 	return NO;
 }
@@ -190,10 +207,8 @@
 	[self _sendConnectionUpdate:@"Connected to IRC..."
 					  withState:[NSNumber numberWithInt:NetworkStatusStateConnected]];
 
-//	[self _sendMessage:@"NICK app_learning_irc"];
-//	[self _sendMessage:@"USER app_learning_irc 0 * :Trying to learn TCP and IRC app"];
-	[self _sendMessage:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
-	[self _sendMessage:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
+	[self _sendMessageWithDelay:[NSString stringWithFormat:@"NICK %@", [self _getRandomNick]]];
+	[self _sendMessageWithDelay:[NSString stringWithFormat:@"USER %@", [self _getRandomUser]]];
 }
 
 - (void)tcpClient:(id)client didReceiveData:(NSData *)data {
@@ -220,9 +235,9 @@
 			if ([components count] > 0) {
 				NSString *possibleCommand = [components objectAtIndex:1];
 			if ([possibleCommand isEqualToString:@"001"]) {
-					[self _sendMessage:@"JOIN #xbins"];
+					[self _sendMessageWithDelay:@"JOIN #xbins"];
 				} else if ([possibleCommand isEqualToString:@"332"]) {
-					[self _sendMessage:@"PRIVMSG #xbins !list"];
+					[self _sendMessageWithDelay:@"PRIVMSG #xbins !list"];
 				} else if ([possibleCommand isEqualToString:@"PRIVMSG"]) {
 					NSLog(@"Got a privmsg");
 					if ([self _processPrivateMessage:message]) {

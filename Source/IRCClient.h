@@ -1,11 +1,13 @@
 #import <Foundation/Foundation.h>
 #import "TCPClient.h"
+#import "DelayedMessage.h"
 
 @interface IRCClient : NSObject <TCPClientDelegate> {
     TCPClient *_tcpClient;
     NSString *_host;
     int _port;
     BOOL _isConnected;
+	NSString *_pendingMessage;
 }
 
 #pragma mark - Getters/setters
@@ -31,6 +33,7 @@
 - (void)_sendConnectionUpdate:(NSString *)update withState:(NSNumber *)state;
 - (BOOL)_processPrivateMessage:(NSString *)message;
 - (NSDictionary *)_getFTPConnectionDetails:(NSString *)message;
+- (void)_sendMessageWithDelay:(NSString *)message;
 
 #pragma mark - TCPClientDelegate
 - (void)tcpClientDidConnect:(id)client;
